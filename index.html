@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Qualyhouse" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>Qualyhouse Control Alpha</title>
+  <style>
+    :root{
+      --bg:#f5f6f8;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--accent:#111827;
+      --livre:#22c55e;--ocupado:#3b82f6;--reserva:#f59e0b;--manutencao:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    button,input,select,textarea{font:inherit}
+    .app{max-width:760px;margin:0 auto;min-height:100vh;padding-bottom:88px}
+    header{position:sticky;top:0;z-index:20;background:rgba(245,246,248,.95);backdrop-filter:blur(14px);padding:16px 16px 10px;border-bottom:1px solid var(--line)}
+    .brand{font-weight:800;letter-spacing:.04em}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .screen{display:none;padding:16px}.screen.active{display:block}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(17,24,39,.05)}
+    .card h3,.card h4{margin:0 0 8px}.muted{color:var(--muted);font-size:13px}
+    .metric strong{display:block;font-size:22px;margin-top:4px}
+    .wide{grid-column:1/-1}
+    .btn{border:0;border-radius:12px;padding:12px 14px;background:var(--accent);color:#fff;font-weight:700}
+    .btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}
+    .btn.soft{background:#eef2f7;color:var(--text)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .row-between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .property{cursor:pointer}
+    .property .title{font-weight:800;font-size:17px}
+    .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:12px;background:#f3f4f6}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .dot.livre{background:var(--livre)}.dot.ocupado{background:var(--ocupado)}.dot.reserva{background:var(--reserva)}.dot.manutencao{background:var(--manutencao)}
+    .nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:30}
+    .nav button{border:0;background:none;padding:10px 4px;color:var(--muted);font-size:12px}
+    .nav button.active{color:var(--text);font-weight:800}
+    .legend{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .tabs{display:flex;gap:8px;margin:12px 0}.tabs button{flex:1}
+    .plan-wrap{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+    .plan-wrap img{width:100%;display:block;opacity:.96}
+    .apt-btn{position:absolute;transform:translate(-50%,-50%);min-width:44px;height:38px;padding:0 10px;border-radius:12px;border:2px solid rgba(255,255,255,.9);color:#fff;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+    .apt-btn.livre{background:var(--livre)}.apt-btn.ocupado{background:var(--ocupado)}.apt-btn.reserva{background:var(--reserva)}.apt-btn.manutencao{background:var(--manutencao)}
+    .section-title{font-size:14px;font-weight:800;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.04em;color:#4b5563}
+    .field{margin-bottom:12px}.field label{display:block;font-size:12px;font-weight:700;color:#4b5563;margin-bottom:6px}
+    .field input,.field select,.field textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff}
+    .field textarea{min-height:88px;resize:vertical}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .unit-row{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .status-badge{padding:6px 9px;border-radius:999px;color:#fff;font-size:12px;font-weight:800}
+    .status-badge.livre{background:var(--livre)}.status-badge.ocupado{background:var(--ocupado)}.status-badge.reserva{background:var(--reserva)}.status-badge.manutencao{background:var(--manutencao)}
+    dialog{border:0;border-radius:20px;width:min(720px,calc(100% - 20px));max-height:88vh;padding:0;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+    dialog::backdrop{background:rgba(17,24,39,.5)}
+    .modal-head{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;z-index:2}
+    .modal-body{padding:16px;background:#fafafa}
+    .close{border:0;background:#f3f4f6;border-radius:50%;width:34px;height:34px}
+    .payment{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}
+    .empty{padding:18px;text-align:center;color:var(--muted);background:#fff;border:1px dashed #d1d5db;border-radius:14px}
+    .hide{display:none!important}
+    @media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.metric strong{font-size:19px}.card{padding:14px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">QUALYHOUSE CONTROL ALPHA</div>
+    <div class="sub">Gestão simples de imóveis e recebimentos</div>
+  </header>
+
+  <main>
+    <section id="screen-home" class="screen active">
+      <div class="grid">
+        <div class="card metric"><span class="muted">Recebido no mês</span><strong id="m-recebido">R$ 0,00</strong></div>
+        <div class="card metric"><span class="muted">Pendente</span><strong id="m-pendente">R$ 0,00</strong></div>
+        <div class="card metric"><span class="muted">Atrasado</span><strong id="m-atrasado">R$ 0,00</strong></div>
+        <div class="card metric"><span class="muted">Despesas</span><strong id="m-despesas">R$ 0,00</strong></div>
+        <div class="card metric wide"><span class="muted">Resultado do mês</span><strong id="m-resultado">R$ 0,00</strong></div>
+      </div>
+
+      <div class="section-title">Empreendimentos</div>
+      <div class="list">
+        <div class="card property" onclick="openProperty('villa')">
+          <div class="row-between"><div><div class="title">VILLA PARK | RESIDENCIAL</div><div class="muted">16 apartamentos • térreo + superior</div></div><span>›</span></div>
+        </div>
+        <div class="card property" onclick="openProperty('girassol')">
+          <div class="row-between"><div><div class="title">🌻 Residencial Girassol</div><div class="muted">5 apartamentos • térreo</div></div><span>›</span></div>
+        </div>
+        <div class="card property" onclick="openProperty('oca')">
+          <div class="row-between"><div><div class="title">Oca Urbana</div><div class="muted">Empreendimento futuro</div></div><span>›</span></div>
+        </div>
+        <div class="card property" onclick="openProperty('avulsos')">
+          <div class="row-between"><div><div class="title">🏠 Locações Avulsas</div><div class="muted">Casa, chácara, apartamento e outros</div></div><span>›</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">Atalhos</div>
+      <div class="grid">
+        <button class="btn" onclick="quickPayment()">+ Registrar pagamento</button>
+        <button class="btn secondary" onclick="showScreen('finance')">Ver financeiro</button>
+        <button class="btn secondary" onclick="openProperty('avulsos')">+ Nova locação</button>
+        <button class="btn secondary" onclick="showOverdue()">⚠ Ver atrasados</button>
+      </div>
+    </section>
+
+    <section id="screen-properties" class="screen">
+      <div class="section-title">Imóveis</div>
+      <div class="list">
+        <div class="card property" onclick="openProperty('villa')"><div class="title">Villa Park</div><div class="muted">01–16</div></div>
+        <div class="card property" onclick="openProperty('girassol')"><div class="title">Residencial Girassol</div><div class="muted">01–05</div></div>
+        <div class="card property" onclick="openProperty('oca')"><div class="title">Oca Urbana</div><div class="muted">Preparado para cadastro futuro</div></div>
+        <div class="card property" onclick="openProperty('avulsos')"><div class="title">Locações Avulsas</div><div class="muted" id="av-count">0 imóveis cadastrados</div></div>
+      </div>
+    </section>
+
+    <section id="screen-finance" class="screen">
+      <div class="row-between"><div><h2 style="margin:0">Financeiro</h2><div class="muted">Histórico geral de pagamentos</div></div><button class="btn" onclick="quickPayment()">+ Registrar</button></div>
+      <div class="section-title">Pagamentos</div>
+      <div id="finance-list" class="list"></div>
+    </section>
+
+    <section id="screen-settings" class="screen">
+      <h2>Ajustes</h2>
+      <div class="card">
+        <h3>Dados locais</h3>
+        <p class="muted">Esta versão Alpha salva os dados neste aparelho/navegador. Não há servidor ou login nesta versão.</p>
+        <div class="row">
+          <button class="btn secondary" onclick="exportData()">Exportar backup</button>
+          <label class="btn secondary" style="cursor:pointer">Importar backup<input id="import-file" type="file" accept=".json" class="hide" onchange="importData(event)"></label>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-property" class="screen">
+      <button class="btn secondary" onclick="showScreen('home')">‹ Voltar</button>
+      <div id="property-content"></div>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <button id="nav-home" class="active" onclick="showScreen('home')">⌂<br>Início</button>
+    <button id="nav-properties" onclick="showScreen('properties')">▦<br>Imóveis</button>
+    <button id="nav-finance" onclick="showScreen('finance')">$<br>Financeiro</button>
+    <button id="nav-settings" onclick="showScreen('settings')">⚙<br>Ajustes</button>
+  </nav>
+</div>
+
+<dialog id="unit-dialog">
+  <div class="modal-head"><div><strong id="unit-title">Apartamento</strong><div class="muted" id="unit-sub"></div></div><button class="close" onclick="closeUnit()">×</button></div>
+  <div class="modal-body" id="unit-body"></div>
+</dialog>
+
+<dialog id="payment-dialog">
+  <div class="modal-head"><div><strong>Registrar pagamento</strong><div class="muted" id="payment-sub"></div></div><button class="close" onclick="document.getElementById('payment-dialog').close()">×</button></div>
+  <div class="modal-body" id="payment-body"></div>
+</dialog>
+
+<script>
+const STORE='qualyhouse_alpha_v1';
+
+const baseUnits = {};
+for(let i=1;i<=16;i++){
+  const id=String(i).padStart(2,'0');
+  baseUnits['villa-'+id]={property:'Villa Park', unit:id, type:'Apartamento', bedrooms:[4,5,15,16].includes(i)?2:1,status:'livre',tenant:'',phone:'',email:'',rent:'',dueDay:'',entryDate:'',exitDate:'',contractStatus:'',notes:'',energyUC:'',payments:[],maintenance:[]};
+}
+for(let i=1;i<=5;i++){
+  const id=String(i).padStart(2,'0');
+  baseUnits['girassol-'+id]={property:'Residencial Girassol', unit:id, type:'Apartamento', bedrooms:'',status:'livre',tenant:'',phone:'',email:'',rent:'',dueDay:'',entryDate:'',exitDate:'',contractStatus:'',notes:'',energyUC:'',payments:[],maintenance:[]};
+}
+
+const defaults={
+  units:baseUnits,
+  properties:{
+    villa:{energyUC:'',waterUC:''},
+    girassol:{waterHydrometer:''}
+  },
+  avulsos:[],
+  expenses:[]
+};
+
+let db=load();
+let currentUnitKey=null;
+let currentFloor='ground';
+
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function load(){
+  try{
+    const raw=localStorage.getItem(STORE);
+    if(!raw) return clone(defaults);
+    const d=JSON.parse(raw);
+    // Merge any missing fixed units after updates.
+    d.units={...clone(baseUnits),...(d.units||{})};
+    d.properties={...clone(defaults.properties),...(d.properties||{})};
+    d.avulsos=d.avulsos||[]; d.expenses=d.expenses||[];
+    return d;
+  }catch(e){return clone(defaults)}
+}
+function save(){localStorage.setItem(STORE,JSON.stringify(db));refreshAll()}
+function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function statusLabel(s){return ({livre:'Livre',ocupado:'Ocupado',reserva:'Reserva',manutencao:'Manutenção'})[s]||s}
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  const nav=document.getElementById('nav-'+name); if(nav)nav.classList.add('active');
+  if(name==='finance')renderFinance();
+  if(name==='properties')document.getElementById('av-count').textContent=`${db.avulsos.length} imóveis cadastrados`;
+  window.scrollTo(0,0);
+}
+function refreshAll(){renderMetrics();renderFinance()}
+function thisMonthPayments(){
+  const now=new Date(); const y=now.getFullYear(),m=now.getMonth();
+  let all=[];
+  Object.entries(db.units).forEach(([k,u])=>(u.payments||[]).forEach(p=>all.push({...p,source:`${u.property} • ${u.unit}`})));
+  db.avulsos.forEach(a=>(a.payments||[]).forEach(p=>all.push({...p,source:a.name||a.type})));
+  return all.filter(p=>{const d=new Date(p.date+'T12:00:00');return d.getFullYear()===y&&d.getMonth()===m});
+}
+function renderMetrics(){
+  const received=thisMonthPayments().reduce((a,p)=>a+Number(p.value||0),0);
+  const expenses=(db.expenses||[]).reduce((a,e)=>a+Number(e.value||0),0);
+  document.getElementById('m-recebido').textContent=money(received);
+  document.getElementById('m-despesas').textContent=money(expenses);
+  document.getElementById('m-resultado').textContent=money(received-expenses);
+  // Alpha: pending/overdue depend on filled rent+dueDay and current status ocupado.
+  let pend=0,over=0; const day=new Date().getDate();
+  Object.values(db.units).forEach(u=>{
+    if(u.status==='ocupado' && Number(u.rent)>0){
+      const has=thisMonthPayments().some(p=>p.source===`${u.property} • ${u.unit}`);
+      if(!has){ if(Number(u.dueDay)&&day>Number(u.dueDay)) over+=Number(u.rent); else pend+=Number(u.rent);}
+    }
+  });
+  db.avulsos.forEach(a=>{
+    if(a.status==='ocupado' && Number(a.rent)>0){
+      const has=thisMonthPayments().some(p=>p.source===(a.name||a.type));
+      if(!has){ if(Number(a.dueDay)&&day>Number(a.dueDay)) over+=Number(a.rent); else pend+=Number(a.rent);}
+    }
+  });
+  document.getElementById('m-pendente').textContent=money(pend);
+  document.getElementById('m-atrasado').textContent=money(over);
+}
+function legendHTML(){
+  return `<div class="legend">
+    <span class="pill"><span class="dot livre"></span>Livre</span>
+    <span class="pill"><span class="dot ocupado"></span>Ocupado</span>
+    <span class="pill"><span class="dot reserva"></span>Reserva</span>
+    <span class="pill"><span class="dot manutencao"></span>Manutenção</span>
+  </div>`
+}
+
+const groundPos={
+ '01':[71,18],'02':[70,35],'03':[70,52],'04':[69,76],
+ '05':[28,77],'06':[29,52],'07':[29,35],'08':[29,18]
+};
+const upperPos={
+ '09':[28,17],'10':[71,17],'11':[28,34],'12':[71,34],
+ '13':[28,50],'14':[71,50],'15':[29,76],'16':[70,76]
+};
+
+function openProperty(which){
+  showScreen('property');
+  const el=document.getElementById('property-content');
+  if(which==='villa'){
+    el.innerHTML=`
+      <div class="row-between" style="margin-top:14px"><div><h2 style="margin:0">VILLA PARK | RESIDENCIAL</h2><div class="muted">Mapa de apartamentos</div></div></div>
+      ${legendHTML()}
+      <div class="tabs"><button id="tab-ground" class="btn" onclick="setFloor('ground')">Térreo</button><button id="tab-upper" class="btn secondary" onclick="setFloor('upper')">Superior</button></div>
+      <div id="villa-plan"></div>
+      <div class="section-title">Informações do residencial</div>
+      <div class="card">
+        <div class="field"><label>⚡ UC de energia (medidor único)</label><div class="row"><input id="villa-energy" value="${esc(db.properties.villa.energyUC||'')}" placeholder="Digite a UC"><button class="btn secondary" onclick="copyVal('villa-energy')">Copiar</button></div></div>
+        <div class="field"><label>💧 Unidade/identificação de água</label><div class="row"><input id="villa-water" value="${esc(db.properties.villa.waterUC||'')}" placeholder="Digite o número"><button class="btn secondary" onclick="copyVal('villa-water')">Copiar</button></div></div>
+        <button class="btn" onclick="saveVillaInfo()">Salvar informações</button>
+      </div>`;
+    setFloor(currentFloor);
+  } else if(which==='girassol'){
+    let rows='';
+    for(let i=1;i<=5;i++){const id=String(i).padStart(2,'0'),u=db.units['girassol-'+id];
+      rows+=`<div class="unit-row" onclick="openUnit('girassol-${id}')"><div><strong>APTO ${id}</strong><div class="muted">UC energia: ${esc(u.energyUC||'não informada')}</div></div><span class="status-badge ${u.status}">${statusLabel(u.status)}</span></div>`;
+    }
+    el.innerHTML=`
+      <div style="margin-top:14px"><h2 style="margin:0">🌻 Residencial Girassol</h2><div class="muted">5 apartamentos térreos</div></div>
+      ${legendHTML()}
+      <div class="card" style="margin:12px 0">
+        <div class="field"><label>💧 Hidrômetro geral</label><div class="row"><input id="gir-water" value="${esc(db.properties.girassol.waterHydrometer||'')}" placeholder="Digite o número"><button class="btn secondary" onclick="copyVal('gir-water')">Copiar</button></div></div>
+        <button class="btn" onclick="saveGirassolInfo()">Salvar</button>
+      </div>
+      <div class="section-title">Apartamentos</div><div class="list">${rows}</div>`;
+  } else if(which==='oca'){
+    el.innerHTML=`<div style="margin-top:14px"><h2>Oca Urbana</h2><div class="card"><h3>Preparado para o futuro</h3><p class="muted">A estrutura poderá receber unidades, mapa, UCs, pagamentos, manutenção e financeiro quando o empreendimento estiver pronto.</p></div></div>`;
+  } else if(which==='avulsos'){
+    renderAvulsos();
+  }
+}
+function setFloor(f){
+  currentFloor=f;
+  const g=document.getElementById('tab-ground'),u=document.getElementById('tab-upper');
+  if(g&&u){g.className=f==='ground'?'btn':'btn secondary';u.className=f==='upper'?'btn':'btn secondary'}
+  const target=document.getElementById('villa-plan'); if(!target)return;
+  const ids=f==='ground'?['01','02','03','04','05','06','07','08']:['09','10','11','12','13','14','15','16'];
+  const pos=f==='ground'?groundPos:upperPos;
+  const img=f==='ground'?'assets/villa-park-terreo.jpeg':'assets/villa-park-superior.jpeg';
+  let buttons=ids.map(id=>{const unit=db.units['villa-'+id],p=pos[id];return `<button class="apt-btn ${unit.status}" style="left:${p[0]}%;top:${p[1]}%" onclick="openUnit('villa-${id}')">${id}</button>`}).join('');
+  target.innerHTML=`<div class="plan-wrap"><img src="${img}" alt="Planta ${f==='ground'?'térrea':'superior'} do Villa Park">${buttons}</div>`;
+}
+
+function openUnit(key){
+  currentUnitKey=key;
+  const u=db.units[key];
+  document.getElementById('unit-title').textContent=`${u.property} • APTO ${u.unit}`;
+  document.getElementById('unit-sub').textContent=u.bedrooms?`${u.bedrooms} quarto${u.bedrooms>1?'s':''}`:'Ficha da unidade';
+  document.getElementById('unit-body').innerHTML=unitForm(u,key);
+  document.getElementById('unit-dialog').showModal();
+}
+function unitForm(u,key){
+  const isGir=key.startsWith('girassol');
+  const pays=(u.payments||[]).slice().reverse().map(p=>`<div class="payment"><div class="row-between"><strong>${esc(p.competence||'')}</strong><strong>${money(p.value)}</strong></div><div class="muted">${esc(p.date||'')} • ${esc(p.method||'')}</div>${p.note?`<div class="muted">${esc(p.note)}</div>`:''}</div>`).join('');
+  return `
+    <div class="card">
+      <div class="field"><label>Status</label><select id="u-status"><option value="livre" ${u.status==='livre'?'selected':''}>Livre</option><option value="ocupado" ${u.status==='ocupado'?'selected':''}>Ocupado</option><option value="reserva" ${u.status==='reserva'?'selected':''}>Reserva</option><option value="manutencao" ${u.status==='manutencao'?'selected':''}>Manutenção</option></select></div>
+    </div>
+    <div class="section-title">Morador</div>
+    <div class="card">
+      <div class="field"><label>Nome completo</label><input id="u-tenant" value="${esc(u.tenant)}"></div>
+      <div class="field"><label>Telefone / WhatsApp</label><input id="u-phone" value="${esc(u.phone)}"></div>
+      <div class="field"><label>E-mail</label><input id="u-email" value="${esc(u.email)}"></div>
+    </div>
+    <div class="section-title">Locação</div>
+    <div class="card">
+      <div class="field"><label>Valor mensal</label><input id="u-rent" inputmode="decimal" value="${esc(u.rent)}" placeholder="0,00"></div>
+      <div class="field"><label>Dia do vencimento</label><input id="u-due" inputmode="numeric" value="${esc(u.dueDay)}" placeholder="Ex.: 10"></div>
+      <div class="field"><label>Data de entrada</label><input id="u-entry" type="date" value="${esc(u.entryDate)}"></div>
+      <div class="field"><label>Data prevista de saída</label><input id="u-exit" type="date" value="${esc(u.exitDate)}"></div>
+      <div class="field"><label>Situação do contrato</label><input id="u-contract" value="${esc(u.contractStatus)}" placeholder="Ex.: ativo"></div>
+      ${isGir?`<div class="field"><label>⚡ UC de energia individual</label><input id="u-energy" value="${esc(u.energyUC||'')}" placeholder="Digite a UC"></div>`:''}
+    </div>
+    <div class="section-title">Financeiro</div>
+    <div class="card">
+      <button class="btn" onclick="saveUnit();openPayment('${key}')">+ Registrar pagamento</button>
+      <div style="height:10px"></div>
+      <div class="list">${pays||'<div class="empty">Nenhum pagamento registrado.</div>'}</div>
+    </div>
+    <div class="section-title">Observações</div>
+    <div class="card"><div class="field"><textarea id="u-notes" placeholder="Observações gerais">${esc(u.notes)}</textarea></div></div>
+    <div style="height:12px"></div><button class="btn" style="width:100%" onclick="saveUnit()">Salvar alterações</button>`;
+}
+function saveUnit(){
+  if(!currentUnitKey)return; const u=db.units[currentUnitKey];
+  u.status=document.getElementById('u-status').value;
+  u.tenant=document.getElementById('u-tenant').value.trim();
+  u.phone=document.getElementById('u-phone').value.trim();
+  u.email=document.getElementById('u-email').value.trim();
+  u.rent=document.getElementById('u-rent').value.replace(',','.');
+  u.dueDay=document.getElementById('u-due').value.trim();
+  u.entryDate=document.getElementById('u-entry').value;
+  u.exitDate=document.getElementById('u-exit').value;
+  u.contractStatus=document.getElementById('u-contract').value.trim();
+  const en=document.getElementById('u-energy'); if(en)u.energyUC=en.value.trim();
+  u.notes=document.getElementById('u-notes').value;
+  save();
+  if(currentUnitKey.startsWith('villa'))setFloor(currentFloor);
+  toast('Alterações salvas');
+}
+function closeUnit(){document.getElementById('unit-dialog').close(); if(currentUnitKey?.startsWith('girassol'))openProperty('girassol')}
+
+function openPayment(key){
+  currentUnitKey=key; const u=db.units[key];
+  document.getElementById('payment-sub').textContent=`${u.property} • APTO ${u.unit}`;
+  const now=new Date(), comp=`${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+  document.getElementById('payment-body').innerHTML=`
+    <div class="field"><label>Competência</label><input id="p-comp" value="${comp}"></div>
+    <div class="field"><label>Data do pagamento</label><input id="p-date" type="date" value="${now.toISOString().slice(0,10)}"></div>
+    <div class="field"><label>Valor recebido</label><input id="p-value" inputmode="decimal" value="${esc(u.rent||'')}"></div>
+    <div class="field"><label>Forma de pagamento</label><select id="p-method"><option>PIX</option><option>Dinheiro</option><option>Transferência</option><option>Cartão</option><option>Outro</option></select></div>
+    <div class="field"><label>Observação</label><textarea id="p-note"></textarea></div>
+    <button class="btn" style="width:100%" onclick="savePayment()">Salvar pagamento</button>`;
+  document.getElementById('payment-dialog').showModal();
+}
+function savePayment(){
+  const u=db.units[currentUnitKey];
+  u.payments=u.payments||[];
+  u.payments.push({competence:document.getElementById('p-comp').value,date:document.getElementById('p-date').value,value:document.getElementById('p-value').value.replace(',','.'),method:document.getElementById('p-method').value,note:document.getElementById('p-note').value.trim()});
+  save();
+  document.getElementById('payment-dialog').close();
+  openUnit(currentUnitKey);
+}
+function quickPayment(){
+  const keys=Object.keys(db.units);
+  const options=keys.map(k=>{const u=db.units[k];return `<option value="${k}">${u.property} • APTO ${u.unit}</option>`}).join('');
+  document.getElementById('payment-sub').textContent='Escolha a unidade';
+  document.getElementById('payment-body').innerHTML=`
+    <div class="field"><label>Unidade</label><select id="qp-unit">${options}</select></div>
+    <button class="btn" style="width:100%" onclick="document.getElementById('payment-dialog').close();openPayment(document.getElementById('qp-unit').value)">Continuar</button>`;
+  document.getElementById('payment-dialog').showModal();
+}
+function renderFinance(){
+  const target=document.getElementById('finance-list'); if(!target)return;
+  let all=[];
+  Object.entries(db.units).forEach(([k,u])=>(u.payments||[]).forEach(p=>all.push({...p,source:`${u.property} • APTO ${u.unit}`})));
+  db.avulsos.forEach(a=>(a.payments||[]).forEach(p=>all.push({...p,source:a.name||a.type})));
+  all.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  target.innerHTML=all.length?all.map(p=>`<div class="payment"><div class="row-between"><strong>${esc(p.source)}</strong><strong>${money(p.value)}</strong></div><div class="muted">${esc(p.competence||'')} • ${esc(p.date||'')} • ${esc(p.method||'')}</div></div>`).join(''):'<div class="empty">Nenhum pagamento registrado.</div>';
+}
+function showOverdue(){showScreen('finance');alert('Os valores “Atrasado” aparecem no painel quando a unidade está Ocupada, possui valor/vencimento preenchidos e não há pagamento registrado no mês.')}
+
+function saveVillaInfo(){db.properties.villa.energyUC=document.getElementById('villa-energy').value.trim();db.properties.villa.waterUC=document.getElementById('villa-water').value.trim();save();toast('Informações salvas')}
+function saveGirassolInfo(){db.properties.girassol.waterHydrometer=document.getElementById('gir-water').value.trim();save();toast('Hidrômetro salvo')}
+function copyVal(id){const v=document.getElementById(id).value;if(navigator.clipboard&&v)navigator.clipboard.writeText(v).then(()=>toast('Copiado'))}
+function toast(msg){const d=document.createElement('div');d.textContent=msg;Object.assign(d.style,{position:'fixed',left:'50%',bottom:'90px',transform:'translateX(-50%)',background:'#111827',color:'#fff',padding:'10px 14px',borderRadius:'999px',zIndex:100,fontWeight:700});document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
+
+function renderAvulsos(){
+  const el=document.getElementById('property-content');
+  const rows=db.avulsos.map((a,i)=>`<div class="unit-row" onclick="editAvulso(${i})"><div><strong>${esc(a.name||a.type)}</strong><div class="muted">${esc(a.type)} • ${money(a.rent)} • vence dia ${esc(a.dueDay||'-')}</div></div><span class="status-badge ${a.status}">${statusLabel(a.status)}</span></div>`).join('');
+  el.innerHTML=`
+    <div class="row-between" style="margin-top:14px"><div><h2 style="margin:0">🏠 Locações Avulsas</h2><div class="muted">Cadastre imóveis fora dos residenciais</div></div><button class="btn" onclick="newAvulso()">+ Novo</button></div>
+    ${legendHTML()}
+    <div class="list">${rows||'<div class="empty">Nenhum imóvel avulso cadastrado.</div>'}</div>`;
+}
+function newAvulso(){
+  const name=prompt('Identificação do imóvel (ex.: Casa Centro):'); if(name===null)return;
+  const type=prompt('Tipo (Casa, Chácara, Apartamento, Sala, Kitnet ou Outro):','Casa')||'Outro';
+  db.avulsos.push({id:Date.now(),name:name.trim(),type:type.trim(),rent:'',dueDay:'',status:'livre',tenant:'',phone:'',notes:'',payments:[]});
+  save();renderAvulsos();editAvulso(db.avulsos.length-1);
+}
+function editAvulso(i){
+  const a=db.avulsos[i];
+  document.getElementById('unit-title').textContent=a.name||a.type;
+  document.getElementById('unit-sub').textContent='Locação avulsa';
+  document.getElementById('unit-body').innerHTML=`
+    <div class="card">
+      <div class="field"><label>Tipo</label><input id="a-type" value="${esc(a.type)}"></div>
+      <div class="field"><label>Identificação</label><input id="a-name" value="${esc(a.name)}"></div>
+      <div class="field"><label>Status</label><select id="a-status"><option value="livre" ${a.status==='livre'?'selected':''}>Livre</option><option value="ocupado" ${a.status==='ocupado'?'selected':''}>Ocupado</option><option value="reserva" ${a.status==='reserva'?'selected':''}>Reserva</option><option value="manutencao" ${a.status==='manutencao'?'selected':''}>Manutenção</option></select></div>
+      <div class="field"><label>Valor do aluguel</label><input id="a-rent" value="${esc(a.rent)}"></div>
+      <div class="field"><label>Dia do vencimento</label><input id="a-due" value="${esc(a.dueDay)}"></div>
+      <div class="field"><label>Morador/locatário</label><input id="a-tenant" value="${esc(a.tenant)}"></div>
+      <div class="field"><label>Telefone</label><input id="a-phone" value="${esc(a.phone)}"></div>
+      <div class="field"><label>Observações</label><textarea id="a-notes">${esc(a.notes)}</textarea></div>
+      <button class="btn" style="width:100%" onclick="saveAvulso(${i})">Salvar</button>
+    </div>`;
+  document.getElementById('unit-dialog').showModal();
+}
+function saveAvulso(i){
+  const a=db.avulsos[i]; a.type=document.getElementById('a-type').value;a.name=document.getElementById('a-name').value;a.status=document.getElementById('a-status').value;a.rent=document.getElementById('a-rent').value.replace(',','.');a.dueDay=document.getElementById('a-due').value;a.tenant=document.getElementById('a-tenant').value;a.phone=document.getElementById('a-phone').value;a.notes=document.getElementById('a-notes').value;save();document.getElementById('unit-dialog').close();renderAvulsos()
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='qualyhouse-backup.json';a.click();URL.revokeObjectURL(a.href)
+}
+function importData(ev){
+  const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Backup importado com sucesso.')}catch(e){alert('Arquivo inválido.')}};r.readAsText(f)
+}
+
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+refreshAll();
+</script>
+</body>
+</html>
