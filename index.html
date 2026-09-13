@@ -399,6 +399,38 @@ function quickPayment(){
     <div class="field"><label>Unidade</label><select id="qp-unit">${options}</select></div>
     <button class="btn" style="width:100%" onclick="document.getElementById('payment-dialog').close();openPayment(document.getElementById('qp-unit').value)">Continuar</button>`;
   document.getElementById('payment-dialog').showModal();
+}function openExpense(){
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('expense-body').innerHTML=`
+    <div class="field"><label>Empreendimento</label><select id="exp-property"><option>Villa Park</option><option>Residencial Girassol</option><option>Oca Urbana</option><option>Locações Avulsas</option></select></div>
+    <div class="field"><label>Categoria</label><select id="exp-category"><option>Manutenção</option><option>Água</option><option>Energia</option><option>Internet</option><option>Limpeza</option><option>Material</option><option>Impostos</option><option>Outros</option></select></div>
+    <div class="field"><label>Descrição</label><input id="exp-description"></div>
+    <div class="field"><label>Valor</label><input id="exp-value" inputmode="decimal" placeholder="0,00"></div>
+    <div class="field"><label>Data</label><input id="exp-date" type="date" value="${today}"></div>
+    <div class="field"><label>Observação</label><textarea id="exp-notes"></textarea></div>
+    <button class="btn" style="width:100%" onclick="saveExpense()">Salvar despesa</button>
+  `;
+  document.getElementById('expense-dialog').showModal();
+}
+
+function saveExpense(){
+  db.expenses=db.expenses||[];
+  const description=document.getElementById('exp-description').value.trim();
+  const value=Number((document.getElementById('exp-value').value||'0').replace(',','.'));
+  if(!description||!value){alert('Preencha a descrição e o valor da despesa.');return;}
+  db.expenses.push({
+    property:document.getElementById('exp-property').value,
+    category:document.getElementById('exp-category').value,
+    description,
+    value,
+    date:document.getElementById('exp-date').value,
+    notes:document.getElementById('exp-notes').value
+  });
+  save();
+  document.getElementById('expense-dialog').close();
+  renderFinance();
+  refreshAll();
+  toast('Despesa salva');
 }
 function renderFinance(){
   const target=document.getElementById('finance-list'); if(!target)return;
