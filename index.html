@@ -433,12 +433,59 @@ function saveExpense(){
   toast('Despesa salva');
 }
 function renderFinance(){
-  const target=document.getElementById('finance-list'); if(!target)return;
+  const target=document.getElementById('finance-list');
+  if(!target)return;
+
   let all=[];
-  Object.entries(db.units).forEach(([k,u])=>(u.payments||[]).forEach(p=>all.push({...p,source:`${u.property} • APTO ${u.unit}`})));
-  db.avulsos.forEach(a=>(a.payments||[]).forEach(p=>all.push({...p,source:a.name||a.type})));
+
+  Object.entries(db.units).forEach(([k,u])=>
+    (u.payments||[]).forEach(p=>all.push({
+      ...p,
+      kind:'payment',
+      source:`${u.property} • APTO ${u.unit}`
+    }))
+  );
+
+  db.avulsos.forEach(a=>
+    (a.payments||[]).forEach(p=>all.push({
+      ...p,
+      kind:'payment',
+      source:a.name||a.type
+    }))
+  );
+
+  (db.expenses||[]).forEach(e=>all.push({
+    ...e,
+    kind:'expense',
+    source:e.property||'Despesa'
+  }));
+
   all.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  target.innerHTML=all.length?all.map(p=>`<div class="payment"><div class="row-between"><strong>${esc(p.source)}</strong><strong>${money(p.value)}</strong></div><div class="muted">${esc(p.competence||'')} • ${esc(p.date||'')} • ${esc(p.method||'')}</div></div>`).join(''):'<div class="empty">Nenhum pagamento registrado.</div>';
+
+  target.innerHTML=all.length
+    ? all.map(item=>{
+        if(item.kind==='expense'){
+          return `<div class="payment">
+            <div class="row-between">
+              <div>
+                <strong>${esc(item.description||'Despesa')}</strong>
+                <div class="muted">${esc(item.source)} • ${esc(item.category||'Outros')}</div>
+              </div>
+              <strong>− ${money(item.value)}</strong>
+            </div>
+            <div class="muted">${esc(item.date||'')}${item.notes?` • ${esc(item.notes)}`:''}</div>
+          </div>`;
+        }
+
+        return `<div class="payment">
+          <div class="row-between">
+            <strong>${esc(item.source)}</strong>
+            <strong>${money(item.value)}</strong>
+          </div>
+          <div class="muted">${esc(item.competence||'')} • ${esc(item.date||'')} • ${esc(item.method||'')}</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">Nenhum lançamento financeiro registrado.</div>';
 }
 function showOverdue(){showScreen('finance');alert('Os valores “Atrasado” aparecem no painel quando a unidade está Ocupada, possui valor/vencimento preenchidos e não há pagamento registrado no mês.')}
 
