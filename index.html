@@ -316,6 +316,55 @@ function openProperty(which){
   } else if(which==='avulsos'){
     renderAvulsos();
   }
+}function getPropertyFinance(propertyName){
+  const now=new Date();
+  const year=now.getFullYear();
+  const month=now.getMonth();
+
+  let monthlyRevenue=0;
+  let annualRevenue=0;
+  let monthlyExpenses=0;
+  let annualExpenses=0;
+
+  Object.values(db.units).forEach(u=>{
+    if(u.property!==propertyName)return;
+
+    (u.payments||[]).forEach(p=>{
+      if(!p.date)return;
+      const d=new Date(p.date+'T12:00:00');
+
+      if(d.getFullYear()===year){
+        annualRevenue+=Number(p.value||0);
+
+        if(d.getMonth()===month){
+          monthlyRevenue+=Number(p.value||0);
+        }
+      }
+    });
+  });
+
+  (db.expenses||[]).forEach(e=>{
+    if(e.property!==propertyName || !e.date)return;
+
+    const d=new Date(e.date+'T12:00:00');
+
+    if(d.getFullYear()===year){
+      annualExpenses+=Number(e.value||0);
+
+      if(d.getMonth()===month){
+        monthlyExpenses+=Number(e.value||0);
+      }
+    }
+  });
+
+  return {
+    monthlyRevenue,
+    monthlyExpenses,
+    monthlyNet:monthlyRevenue-monthlyExpenses,
+    annualRevenue,
+    annualExpenses,
+    annualNet:annualRevenue-annualExpenses
+  };
 }
 function setFloor(f){
   currentFloor=f;
