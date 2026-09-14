@@ -210,7 +210,12 @@ function load(){
     const d=JSON.parse(raw);
     // Merge any missing fixed units after updates.
     d.units={...clone(baseUnits),...(d.units||{})};
-    d.properties={...clone(defaults.properties),...(d.properties||{})};
+    d.properties=d.properties||{};
+d.properties={
+  villa:{...clone(defaults.properties.villa),...(d.properties.villa||{})},
+  girassol:{...clone(defaults.properties.girassol),...(d.properties.girassol||{})},
+  oca:{...clone(defaults.properties.oca),...(d.properties.oca||{})}
+};
     d.avulsos=d.avulsos||[]; d.expenses=d.expenses||[];
     return d;
   }catch(e){return clone(defaults)}
