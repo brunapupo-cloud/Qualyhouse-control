@@ -178,9 +178,22 @@ for(let i=1;i<=5;i++){
 const defaults={
   units:baseUnits,
   properties:{
-    villa:{energyUC:'',waterUC:''},
-    girassol:{waterHydrometer:''}
+  villa:{
+    energyUC:'',
+    waterUC:'',
+    investmentOriginal:800000,
+    currentValue:1500000
   },
+  girassol:{
+    waterHydrometer:'',
+    investmentOriginal:205000,
+    currentValue:400000
+  },
+  oca:{
+    investmentOriginal:null,
+    currentValue:null
+  }
+},
   avulsos:[],
   expenses:[]
 };
