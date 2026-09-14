@@ -310,6 +310,7 @@ function openProperty(which){
         <div class="field"><label>💧 Hidrômetro geral</label><div class="row"><input id="gir-water" value="${esc(db.properties.girassol.waterHydrometer||'')}" placeholder="Digite o número"><button class="btn secondary" onclick="copyVal('gir-water')">Copiar</button></div></div>
         <button class="btn" onclick="saveGirassolInfo()">Salvar</button>
       </div>
+      ${propertyFinanceHTML('girassol','Residencial Girassol')}
       <div class="section-title">Apartamentos</div><div class="list">${rows}</div>`;
   } else if(which==='oca'){
     el.innerHTML=`<div style="margin-top:14px"><h2>Oca Urbana</h2><div class="card"><h3>Preparado para o futuro</h3><p class="muted">A estrutura poderá receber unidades, mapa, UCs, pagamentos, manutenção e financeiro quando o empreendimento estiver pronto.</p></div></div>`;
