@@ -295,8 +295,8 @@ function openProperty(which){
       <div class="card">
         <div class="field"><label>⚡ UC de energia (medidor único)</label><div class="row"><input id="villa-energy" value="${esc(db.properties.villa.energyUC||'')}" placeholder="Digite a UC"><button class="btn secondary" onclick="copyVal('villa-energy')">Copiar</button></div></div>
         <div class="field"><label>💧 Unidade/identificação de água</label><div class="row"><input id="villa-water" value="${esc(db.properties.villa.waterUC||'')}" placeholder="Digite o número"><button class="btn secondary" onclick="copyVal('villa-water')">Copiar</button></div></div>
-        <button class="btn" onclick="saveVillaInfo()">Salvar informações</button>
-      </div>`;
+        <button class="btn" onclick="saveVillaInfo()">Salvar informações</button>${propertyFinanceHTML('villa','Villa Park')}
+     </div> ${propertyFinanceHTML('villa','Villa Park')}`;
     setFloor(currentFloor);
   } else if(which==='girassol'){
     let rows='';
