@@ -366,6 +366,72 @@ function openProperty(which){
     annualNet:annualRevenue-annualExpenses
   };
 }
+
+ function propertyFinanceHTML(key,name){
+  const f=getPropertyFinance(name);
+  const p=db.properties[key]||{};
+
+  const original=Number(p.investmentOriginal||0);
+  const current=Number(p.currentValue||0);
+
+  const monthlyPct=original ? (f.monthlyNet/original)*100 : 0;
+  const annualPct=original ? (f.annualNet/original)*100 : 0;
+
+  return `
+    <div class="section-title">Desempenho financeiro</div>
+
+    <div class="card">
+      <div class="field">
+        <label>Base da rentabilidade</label>
+        <select onchange="changeReturnBase('${key}','${name}',this.value)">
+          <option value="original">Investimento original</option>
+          <option value="current">Valor atual estimado</option>
+        </select>
+      </div>
+
+      <div class="row-between">
+        <span class="muted">Resultado líquido do mês</span>
+        <strong>${money(f.monthlyNet)}</strong>
+      </div>
+
+      <div class="row-between" style="margin-top:10px">
+        <span class="muted">Rentabilidade líquida mensal</span>
+        <strong id="rent-month-${key}">${monthlyPct.toFixed(2).replace('.',',')}%</strong>
+      </div>
+
+      <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
+
+      <div class="row-between">
+        <span class="muted">Resultado líquido do ano</span>
+        <strong>${money(f.annualNet)}</strong>
+      </div>
+
+      <div class="row-between" style="margin-top:10px">
+        <span class="muted">Rentabilidade líquida anual</span>
+        <strong id="rent-year-${key}">${annualPct.toFixed(2).replace('.',',')}%</strong>
+      </div>
+    </div>
+  `;
+}
+
+function changeReturnBase(key,name,type){
+  const f=getPropertyFinance(name);
+  const p=db.properties[key]||{};
+
+  const base=type==='current'
+    ? Number(p.currentValue||0)
+    : Number(p.investmentOriginal||0);
+
+  const monthly=base ? (f.monthlyNet/base)*100 : 0;
+  const annual=base ? (f.annualNet/base)*100 : 0;
+
+  document.getElementById('rent-month-'+key).textContent=
+    monthly.toFixed(2).replace('.',',')+'%';
+
+  document.getElementById('rent-year-'+key).textContent=
+    annual.toFixed(2).replace('.',',')+'%';
+}    
+
 function setFloor(f){
   currentFloor=f;
   const g=document.getElementById('tab-ground'),u=document.getElementById('tab-upper');
