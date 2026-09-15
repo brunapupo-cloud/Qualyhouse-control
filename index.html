@@ -627,7 +627,86 @@ function renderFinance(){
 }
  
 
-function showOverdue(){showScreen('finance');}
+function renderMonthlyClose(){
+  const target=document.getElementById('monthly-close');
+  if(!target)return;
+
+  const year=new Date().getFullYear();
+  const months=[
+    'Janeiro','Fevereiro','Março','Abril',
+    'Maio','Junho','Julho','Agosto',
+    'Setembro','Outubro','Novembro','Dezembro'
+  ];
+
+  const data=months.map(()=>({
+    revenue:0,
+    expenses:0
+  }));
+
+  Object.values(db.units).forEach(u=>{
+    (u.payments||[]).forEach(p=>{
+      if(!p.date)return;
+      const d=new Date(p.date+'T12:00:00');
+
+      if(d.getFullYear()===year){
+        data[d.getMonth()].revenue+=Number(p.value||0);
+      }
+    });
+  });
+
+  (db.avulsos||[]).forEach(a=>{
+    (a.payments||[]).forEach(p=>{
+      if(!p.date)return;
+      const d=new Date(p.date+'T12:00:00');
+
+      if(d.getFullYear()===year){
+        data[d.getMonth()].revenue+=Number(p.value||0);
+      }
+    });
+  });
+
+  (db.expenses||[]).forEach(e=>{
+    if(!e.date)return;
+    const d=new Date(e.date+'T12:00:00');
+
+    if(d.getFullYear()===year){
+      data[d.getMonth()].expenses+=Number(e.value||0);
+    }
+  });
+
+  target.innerHTML=`
+    <div class="muted" style="margin-bottom:10px">
+      Ano ${year}
+    </div>
+
+    <div class="list">
+      ${data.map((m,i)=>{
+        const net=m.revenue-m.expenses;
+
+        return `
+          <div class="card" style="margin-bottom:10px">
+            <strong>${months[i]}</strong>
+
+            <div class="row-between" style="margin-top:8px">
+              <span class="muted">Receita bruta</span>
+              <strong>${money(m.revenue)}</strong>
+            </div>
+
+            <div class="row-between" style="margin-top:6px">
+              <span class="muted">Despesas</span>
+              <strong>${money(m.expenses)}</strong>
+            </div>
+
+            <div class="row-between" style="margin-top:6px">
+              <span>Resultado líquido</span>
+              <strong>${money(net)}</strong>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}function showOverdue(){showScreen('finance');}
 
 
 function saveVillaInfo(){db.properties.villa.energyUC=document.getElementById('villa-energy').value.trim();db.properties.villa.waterUC=document.getElementById('villa-water').value.trim();save();toast('Informações salvas')}
