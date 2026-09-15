@@ -624,8 +624,8 @@ function renderFinance(){
         </div>`;
       }).join('')
     : '<div class="empty">Nenhum lançamento financeiro registrado.</div>';
+renderMonthlyClose();
 }
- 
 
 function renderMonthlyClose(){
   const target=document.getElementById('monthly-close');
