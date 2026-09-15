@@ -706,7 +706,67 @@ function renderMonthlyClose(){
       }).join('')}
     </div>
   `;
-}function showOverdue(){showScreen('finance');}
+}function renderAnnualClose(){
+  const target=document.getElementById('annual-close');
+  if(!target)return;
+
+  const year=new Date().getFullYear();
+
+  let annualRevenue=0;
+  let annualExpenses=0;
+
+  Object.values(db.units).forEach(u=>{
+    (u.payments||[]).forEach(p=>{
+      if(!p.date)return;
+
+      const d=new Date(p.date+'T12:00:00');
+
+      if(d.getFullYear()===year){
+        annualRevenue+=Number(p.value||0);
+      }
+    });
+  });
+
+  (db.avulsos||[]).forEach(a=>{
+    (a.payments||[]).forEach(p=>{
+      if(!p.date)return;
+
+      const d=new Date(p.date+'T12:00:00');
+
+      if(d.getFullYear()===year){
+        annualRevenue+=Number(p.value||0);
+      }
+    });
+  });
+
+  (db.expenses||[]).forEach(e=>{
+    if(!e.date)return;
+
+    const d=new Date(e.date+'T12:00:00');
+
+    if(d.getFullYear()===year){
+      annualExpenses+=Number(e.value||0);
+    }
+  });
+
+  target.innerHTML=`
+    <div class="card">
+      <div class="muted" style="margin-bottom:14px">
+        Ano ${year}
+      </div>
+
+      <div class="row-between">
+        <span class="muted">Receita bruta anual</span>
+        <strong>${money(annualRevenue)}</strong>
+      </div>
+
+      <div class="row-between" style="margin-top:12px">
+        <span class="muted">Despesas anuais</span>
+        <strong>${money(annualExpenses)}</strong>
+      </div>
+    </div>
+  `;
+} function showOverdue(){showScreen('finance');}
 
 
 function saveVillaInfo(){db.properties.villa.energyUC=document.getElementById('villa-energy').value.trim();db.properties.villa.waterUC=document.getElementById('villa-water').value.trim();save();toast('Informações salvas')}
