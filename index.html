@@ -625,7 +625,10 @@ function renderFinance(){
       }).join('')
     : '<div class="empty">Nenhum lançamento financeiro registrado.</div>';
 }
-function showOverdue(){showScreen('finance');alert('Os valores “Atrasado” aparecem no painel quando a unidade está Ocupada, possui valor/vencimento preenchidos e não há pagamento registrado no mês.')}
+ 
+
+function showOverdue(){showScreen('finance');}
+
 
 function saveVillaInfo(){db.properties.villa.energyUC=document.getElementById('villa-energy').value.trim();db.properties.villa.waterUC=document.getElementById('villa-water').value.trim();save();toast('Informações salvas')}
 function saveGirassolInfo(){db.properties.girassol.waterHydrometer=document.getElementById('gir-water').value.trim();save();toast('Hidrômetro salvo')}
