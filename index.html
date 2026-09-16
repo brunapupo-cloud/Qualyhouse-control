@@ -765,7 +765,10 @@ function renderMonthlyClose(){
       <div class="row-between" style="margin-top:12px">
         <span class="muted">Despesas anuais</span>
         <strong>${money(annualExpenses)}</strong>
-      </div>
+      </div><div class="row-between" style="margin-top:12px">
+  <span>Resultado líquido anual</span>
+  <strong>${money(annualRevenue-annualExpenses)}</strong>
+</div>
     </div>
   `;
 } function showOverdue(){showScreen('finance');}
