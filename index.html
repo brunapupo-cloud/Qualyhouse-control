@@ -771,6 +771,9 @@ function renderMonthlyClose(){
 </div><div class="row-between" style="margin-top:12px">
   <span class="muted">Base de cálculo consolidada</span>
   <strong>${money(1005000)}</strong>
+</div><div class="row-between" style="margin-top:12px">
+  <span>Rentabilidade líquida anual</span>
+  <strong>${(((annualRevenue-annualExpenses)/1005000)*100).toFixed(2).replace('.',',')}%</strong>
 </div>
     </div>
   `;
