@@ -1,6 +1,42 @@
-const CACHE='qualyhouse-alpha-v16';
-const ASSETS=['./','index.html','manifest.webmanifest','assets/villa-park-terreo.jpeg','assets/villa-park-superior.jpeg'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
-self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
-self.addEventListener('install',()=>self.skipWaiting());
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+const CACHE='qualyhouse-alpha-v17';
+const ASSETS=['./','index.html','manifest.webmanifest','cloud.js','assets/villa-park-terreo.jpeg','assets/villa-park-superior.jpeg'];
+
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate',e=>e.waitUntil(
+  caches.keys()
+    .then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
+    .then(()=>self.clients.claim())
+));
+
+self.addEventListener('fetch',e=>{
+  const req=e.request;
+  const url=new URL(req.url);
+
+  if(req.mode==='navigate' && url.origin===self.location.origin){
+    e.respondWith((async()=>{
+      try{
+        const response=await fetch(req,{cache:'no-store'});
+        const html=await response.text();
+        const scripts=`\n<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="cloud.js"></script>\n`;
+        const injected=html.includes('cloud.js')?html:html.replace('</body>',scripts+'</body>');
+        return new Response(injected,{status:response.status,statusText:response.statusText,headers:{'content-type':'text/html; charset=utf-8'}});
+      }catch(err){
+        const cached=await caches.match('index.html');
+        if(cached){
+          const html=await cached.text();
+          const scripts=`\n<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="cloud.js"></script>\n`;
+          const injected=html.includes('cloud.js')?html:html.replace('</body>',scripts+'</body>');
+          return new Response(injected,{headers:{'content-type':'text/html; charset=utf-8'}});
+        }
+        throw err;
+      }
+    })());
+    return;
+  }
+
+  e.respondWith(caches.match(req).then(r=>r||fetch(req)));
+});
