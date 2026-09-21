@@ -574,58 +574,51 @@ function renderFinance(){
   const target=document.getElementById('finance-list');
   if(!target)return;
 
-  let all=[];
-
-  Object.entries(db.units).forEach(([k,u])=>
-    (u.payments||[]).forEach(p=>all.push({
-      ...p,
-      kind:'payment',
-      source:`${u.property} • APTO ${u.unit}`
-    }))
-  );
-
-  db.avulsos.forEach(a=>
-    (a.payments||[]).forEach(p=>all.push({
-      ...p,
-      kind:'payment',
-      source:a.name||a.type
-    }))
-  );
-
-  (db.expenses||[]).forEach(e=>all.push({
-    ...e,
-    kind:'expense',
-    source:e.property||'Despesa'
-  }));
-
-  all.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-
-  target.innerHTML=all.length
-    ? all.map(item=>{
-        if(item.kind==='expense'){
-          return `<div class="payment">
-            <div class="row-between">
-              <div>
-                <strong>${esc(item.description||'Despesa')}</strong>
-                <div class="muted">${esc(item.source)} • ${esc(item.category||'Outros')}</div>
-              </div>
-              <strong>− ${money(item.value)}</strong>
-            </div>
-            <div class="muted">${esc(item.date||'')}${item.notes?` • ${esc(item.notes)}`:''}</div>
-          </div>`;
-        }
-
-        return `<div class="payment">
-          <div class="row-between">
-            <strong>${esc(item.source)}</strong>
-            <strong>${money(item.value)}</strong>
-          </div>
-          <div class="muted">${esc(item.competence||'')} • ${esc(item.date||'')} • ${esc(item.method||'')}</div>
-        </div>`;
-      }).join('')
-    : '<div class="empty">Nenhum lançamento financeiro registrado.</div>';
-renderMonthlyClose();
-renderAnnualClose();
+  // A organização é apenas visual: todos os lançamentos permanecem nas unidades.
+  const villaFolders=Array.from({length:16},(_,i)=>({number:i+1,payments:[]}));
+  const other=[];
+  Object.values(db.units).forEach(u=>{
+    (u.payments||[]).forEach(p=>{
+      if(u.property==='Villa Park' && Number(u.unit)>=1 && Number(u.unit)<=16){
+        villaFolders[Number(u.unit)-1].payments.push(p);
+      }else{
+        other.push({...p,kind:'payment',source:`${u.property} • APTO ${u.unit}`});
+      }
+    });
+  });
+  (db.avulsos||[]).forEach(a=>(a.payments||[]).forEach(p=>other.push({...p,kind:'payment',source:a.name||a.type})));
+  (db.expenses||[]).forEach(e=>other.push({...e,kind:'expense',source:e.property||'Despesa'}));
+  const newest=(a,b)=>(b.date||'').localeCompare(a.date||'');
+  const paymentHTML=p=>`<div class="payment" style="margin-top:9px">
+    <div class="row-between"><strong>${esc(p.competence||'Competência não informada')}</strong><strong>${money(p.value)}</strong></div>
+    <div class="muted">Pago em ${esc(p.date||'Data não informada')} • ${esc(p.method||'Forma não informada')}</div>
+    ${p.note?`<div class="muted">${esc(p.note)}</div>`:''}
+  </div>`;
+  const foldersHTML=`<div class="card" style="margin-bottom:14px">
+    <strong>📁 Villa Park</strong><div class="muted" style="margin:5px 0 12px">Toque no apartamento para consultar seus pagamentos.</div>
+    ${villaFolders.map(folder=>{
+      const rows=folder.payments.sort(newest);
+      const total=rows.reduce((sum,p)=>sum+Number(p.value||0),0);
+      return `<details style="border-top:1px solid #e5e7eb;padding:11px 0">
+        <summary style="cursor:pointer;list-style-position:inside;font-weight:700">📁 APTO ${String(folder.number).padStart(2,'0')} <span class="muted" style="font-weight:400">• ${rows.length} ${rows.length===1?'pagamento':'pagamentos'}</span></summary>
+        <div style="padding:10px 0 0 8px">
+          ${rows.length?`<div class="muted">Total registrado: ${money(total)}</div>${rows.map(paymentHTML).join('')}`:'<div class="muted">Nenhum pagamento registrado neste apartamento.</div>'}
+        </div>
+      </details>`;
+    }).join('')}
+  </div>`;
+  other.sort(newest);
+  const otherHTML=other.length?`<div class="section-title">Outros lançamentos</div>`+other.map(item=>{
+    if(item.kind==='expense')return `<div class="payment">
+      <div class="row-between"><div><strong>${esc(item.description||'Despesa')}</strong><div class="muted">${esc(item.source)} • ${esc(item.category||'Outros')}</div></div><strong>− ${money(item.value)}</strong></div>
+      <div class="muted">${esc(item.date||'')}${item.notes?` • ${esc(item.notes)}`:''}</div>
+    </div>`;
+    return `<div class="payment"><div class="row-between"><strong>${esc(item.source)}</strong><strong>${money(item.value)}</strong></div>
+      <div class="muted">${esc(item.competence||'')} • ${esc(item.date||'')} • ${esc(item.method||'')}</div></div>`;
+  }).join(''):'';
+  target.innerHTML=foldersHTML+otherHTML;
+  renderMonthlyClose();
+  renderAnnualClose();
 }
 
 function renderMonthlyClose(){
