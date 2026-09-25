@@ -812,6 +812,8 @@ function newAvulso(){
 }
 function editAvulso(i){
   const a=db.avulsos[i];
+  const pays=(a.payments||[]).slice().sort((x,y)=>(y.date||'').localeCompare(x.date||''));
+  const history=pays.map(p=>'<div class="payment"><div class="row-between"><strong>'+esc(p.competence||'Competência não informada')+'</strong><strong>'+money(p.value)+'</strong></div><div class="muted">'+esc(p.date||'')+' • '+esc(p.method||'')+'</div>'+(p.note?'<div class="muted">'+esc(p.note)+'</div>':'')+'</div>').join('');
   document.getElementById('unit-title').textContent=a.name||a.type;
   document.getElementById('unit-sub').textContent='Locação avulsa';
   document.getElementById('unit-body').innerHTML=`
@@ -824,8 +826,10 @@ function editAvulso(i){
       <div class="field"><label>Morador/locatário</label><input id="a-tenant" value="${esc(a.tenant)}"></div>
       <div class="field"><label>Telefone</label><input id="a-phone" value="${esc(a.phone)}"></div>
       <div class="field"><label>Observações</label><textarea id="a-notes">${esc(a.notes)}</textarea></div>
-      <button class="btn" style="width:100%" onclick="saveAvulso(${i})">Salvar</button>
-    </div>`;
+      <button class="btn" style="width:100%" onclick="saveAvulso(${i})">Salvar alterações</button>
+    </div>
+    <div class="section-title">Histórico de pagamentos • ${esc(a.name||a.type)}</div>
+    <div class="card"><div class="list">${history||'<div class="empty">Nenhum pagamento registrado para este imóvel.</div>'}</div></div>`;
   document.getElementById('unit-dialog').showModal();
 }
 function saveAvulso(i){
