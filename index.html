@@ -828,10 +828,26 @@ function editAvulso(i){
       <div class="field"><label>Observações</label><textarea id="a-notes">${esc(a.notes)}</textarea></div>
       <button class="btn" style="width:100%" onclick="saveAvulso(${i})">Salvar alterações</button>
     </div>
+    <div class="section-title">Financeiro</div>
+    <div class="card"><button class="btn" style="width:100%" onclick="openAvulsoPayment(${i})">+ Registrar pagamento</button></div>
     <div class="section-title">Histórico de pagamentos • ${esc(a.name||a.type)}</div>
     <div class="card"><div class="list">${history||'<div class="empty">Nenhum pagamento registrado para este imóvel.</div>'}</div></div>`;
   document.getElementById('unit-dialog').showModal();
 }
+
+function openAvulsoPayment(i){
+  const a=db.avulsos[i],now=new Date(),comp=String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
+  document.getElementById('payment-sub').textContent=a.name||a.type;
+  document.getElementById('payment-body').innerHTML='<div class="field"><label>Competência</label><input id="ap-comp" value="'+comp+'"></div><div class="field"><label>Data do pagamento</label><input id="ap-date" type="date" value="'+now.toISOString().slice(0,10)+'"></div><div class="field"><label>Valor recebido</label><input id="ap-value" inputmode="decimal" value="'+esc(a.rent||'')+'"></div><div class="field"><label>Forma de pagamento</label><select id="ap-method"><option>PIX</option><option>Dinheiro</option><option>Transferência</option><option>Cartão</option><option>Outro</option></select></div><div class="field"><label>Observação</label><textarea id="ap-note"></textarea></div><button class="btn" style="width:100%" onclick="saveAvulsoPayment('+i+')">Salvar pagamento</button>';
+  document.getElementById('payment-dialog').showModal();
+}
+async function saveAvulsoPayment(i){
+  const a=db.avulsos[i];if(!a)return;
+  a.payments=a.payments||[];
+  a.payments.push({competence:document.getElementById('ap-comp').value,date:document.getElementById('ap-date').value,value:document.getElementById('ap-value').value.replace(',','.'),method:document.getElementById('ap-method').value,note:document.getElementById('ap-note').value.trim()});
+  save();document.getElementById('payment-dialog').close();editAvulso(i);
+}
+
 function saveAvulso(i){
   const a=db.avulsos[i]; a.type=document.getElementById('a-type').value;a.name=document.getElementById('a-name').value;a.status=document.getElementById('a-status').value;a.rent=document.getElementById('a-rent').value.replace(',','.');a.dueDay=document.getElementById('a-due').value;a.tenant=document.getElementById('a-tenant').value;a.phone=document.getElementById('a-phone').value;a.notes=document.getElementById('a-notes').value;save();document.getElementById('unit-dialog').close();renderAvulsos()
 }
