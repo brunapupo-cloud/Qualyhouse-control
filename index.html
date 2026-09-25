@@ -476,7 +476,7 @@ function unitForm(u,key){
   const isVilla=key.startsWith('villa-');
   const linkedSpots=isVilla?(db.parkingSpots||[]).filter(s=>s.unitKey===key).sort((a,b)=>a.type.localeCompare(b.type)||a.number-b.number):[];
   const parkingHTML=isVilla?`<div class="section-title">Vagas de garagem</div><div class="card">${linkedSpots.length?linkedSpots.map(s=>`<div class="row-between" style="margin-bottom:8px"><span>${s.type==='carro'?'🚘 Vaga de carro':'🏍️ Vaga de moto'}</span><strong>${String(s.number).padStart(2,'0')}</strong></div>`).join(''):'<div class="muted">Nenhuma vaga vinculada a este morador.</div>'}</div>`:'';
-  const pays=(u.payments||[]).slice().reverse().map(p=>`<div class="payment"><div class="row-between"><strong>${esc(p.competence||'')}</strong><strong>${money(p.value)}</strong></div><div class="muted">${esc(p.date||'')} • ${esc(p.method||'')}</div>${p.note?`<div class="muted">${esc(p.note)}</div>`:''}</div>`).join('');
+  const pays=(u.payments||[]).slice().reverse().map(p=>`<div class="payment" ${p._id?`onclick="openEditPayment('${key}','${p._id}')" style="cursor:pointer"`:''}><div class="row-between"><strong>${esc(p.competence||'')}</strong><strong>${money(p.value)}</strong></div><div class="muted">${esc(p.date||'')} • ${esc(p.method||'')}</div>${p.note?`<div class="muted">${esc(p.note)}</div>`:''}</div>`).join('');
   return `
     <div class="card">
       <div class="field"><label>Status</label><select id="u-status"><option value="livre" ${u.status==='livre'?'selected':''}>Livre</option><option value="ocupado" ${u.status==='ocupado'?'selected':''}>Ocupado</option><option value="reserva" ${u.status==='reserva'?'selected':''}>Reserva</option><option value="manutencao" ${u.status==='manutencao'?'selected':''}>Manutenção</option></select></div>
@@ -507,6 +507,26 @@ function unitForm(u,key){
     <div class="card"><div class="field"><textarea id="u-notes" placeholder="Observações gerais">${esc(u.notes)}</textarea></div></div>
     <div style="height:12px"></div><button class="btn" style="width:100%" onclick="saveUnit()">Salvar alterações</button>`;
 }
+
+function paymentEditFields(p,saveCall){
+  const methods=['PIX','Dinheiro','Transferência','Cartão','Outro'];
+  return '<div class="field"><label>Competência</label><input id="ep-comp" value="'+esc(p.competence||'')+'"></div><div class="field"><label>Data do pagamento</label><input id="ep-date" type="date" value="'+esc(p.date||'')+'"></div><div class="field"><label>Valor recebido</label><input id="ep-value" inputmode="decimal" value="'+esc(p.value||'')+'"></div><div class="field"><label>Forma de pagamento</label><select id="ep-method">'+methods.map(m=>'<option '+(m===p.method?'selected':'')+'>'+m+'</option>').join('')+'</select></div><div class="field"><label>Observação</label><textarea id="ep-note">'+esc(p.note||'')+'</textarea></div><button class="btn" style="width:100%" onclick="'+saveCall+'">Salvar alterações</button>';
+}
+function openEditPayment(key,id){
+  const u=db.units[key],p=(u.payments||[]).find(x=>x._id===id);if(!p)return;
+  currentUnitKey=key;document.getElementById('payment-sub').textContent='Editar • '+u.property+' • APTO '+u.unit;
+  document.getElementById('payment-body').innerHTML=paymentEditFields(p,"updatePayment('"+key+"','"+id+"')");
+  document.getElementById('payment-dialog').showModal();
+}
+function openEditAvulsoPayment(i,id){
+  const a=db.avulsos[i],p=(a.payments||[]).find(x=>x._id===id);if(!p)return;
+  document.getElementById('payment-sub').textContent='Editar • '+(a.name||a.type);
+  document.getElementById('payment-body').innerHTML=paymentEditFields(p,"updateAvulsoPayment("+i+",'"+id+"')");
+  document.getElementById('payment-dialog').showModal();
+}
+async function updatePayment(key,id){}
+async function updateAvulsoPayment(i,id){}
+
 function saveUnit(){
   if(!currentUnitKey)return; const u=db.units[currentUnitKey];
   u.status=document.getElementById('u-status').value;
@@ -813,7 +833,7 @@ function newAvulso(){
 function editAvulso(i){
   const a=db.avulsos[i];
   const pays=(a.payments||[]).slice().sort((x,y)=>(y.date||'').localeCompare(x.date||''));
-  const history=pays.map(p=>'<div class="payment"><div class="row-between"><strong>'+esc(p.competence||'Competência não informada')+'</strong><strong>'+money(p.value)+'</strong></div><div class="muted">'+esc(p.date||'')+' • '+esc(p.method||'')+'</div>'+(p.note?'<div class="muted">'+esc(p.note)+'</div>':'')+'</div>').join('');
+  const history=pays.map(p=>'<div class="payment" '+(p._id?'onclick="openEditAvulsoPayment('+i+',\''+p._id+'\')" style="cursor:pointer"':'')+'><div class="row-between"><strong>'+esc(p.competence||'Competência não informada')+'</strong><strong>'+money(p.value)+'</strong></div><div class="muted">'+esc(p.date||'')+' • '+esc(p.method||'')+'</div>'+(p.note?'<div class="muted">'+esc(p.note)+'</div>':'')+'</div>').join('');
   document.getElementById('unit-title').textContent=a.name||a.type;
   document.getElementById('unit-sub').textContent='Locação avulsa';
   document.getElementById('unit-body').innerHTML=`
