@@ -814,7 +814,7 @@ function renderMonthlyClose(){
 function saveVillaInfo(){db.properties.villa.energyUC=document.getElementById('villa-energy').value.trim();db.properties.villa.waterUC=document.getElementById('villa-water').value.trim();save();toast('Informações salvas')}
 function saveGirassolInfo(){db.properties.girassol.waterHydrometer=document.getElementById('gir-water').value.trim();save();toast('Hidrômetro salvo')}
 function copyVal(id){const v=document.getElementById(id).value;if(navigator.clipboard&&v)navigator.clipboard.writeText(v).then(()=>toast('Copiado'))}
-function toast(msg){const d=document.createElement('div');d.textContent=msg;Object.assign(d.style,{position:'fixed',left:'50%',bottom:'90px',transform:'translateX(-50%)',background:'#111827',color:'#fff',padding:'10px 14px',borderRadius:'999px',zIndex:100,fontWeight:700});document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
+function toast(msg){if(/salv|atualiz/i.test(msg)){const b=document.activeElement;if(b&&b.tagName==='BUTTON'){const oldBg=b.style.background,oldColor=b.style.color,oldText=b.textContent;b.style.background='#16a34a';b.style.color='#fff';b.textContent='✓ Salvo';setTimeout(()=>{b.style.background=oldBg;b.style.color=oldColor;b.textContent=oldText},1400)}}const d=document.createElement('div');d.textContent=msg;Object.assign(d.style,{position:'fixed',left:'50%',bottom:'90px',transform:'translateX(-50%)',background:'#111827',color:'#fff',padding:'10px 14px',borderRadius:'999px',zIndex:100,fontWeight:700});document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
 
 function renderAvulsos(){
   const el=document.getElementById('property-content');
