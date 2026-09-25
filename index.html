@@ -472,6 +472,9 @@ function openUnit(key){
 }
 function unitForm(u,key){
   const isGir=key.startsWith('girassol');
+  const isVilla=key.startsWith('villa-');
+  const linkedSpots=isVilla?(db.parkingSpots||[]).filter(s=>s.unitKey===key).sort((a,b)=>a.type.localeCompare(b.type)||a.number-b.number):[];
+  const parkingHTML=isVilla?`<div class="section-title">Vagas de garagem</div><div class="card">${linkedSpots.length?linkedSpots.map(s=>`<div class="row-between" style="margin-bottom:8px"><span>${s.type==='carro'?'🚘 Vaga de carro':'🏍️ Vaga de moto'}</span><strong>${String(s.number).padStart(2,'0')}</strong></div>`).join(''):'<div class="muted">Nenhuma vaga vinculada a este morador.</div>'}</div>`:'';
   const pays=(u.payments||[]).slice().reverse().map(p=>`<div class="payment"><div class="row-between"><strong>${esc(p.competence||'')}</strong><strong>${money(p.value)}</strong></div><div class="muted">${esc(p.date||'')} • ${esc(p.method||'')}</div>${p.note?`<div class="muted">${esc(p.note)}</div>`:''}</div>`).join('');
   return `
     <div class="card">
@@ -492,6 +495,7 @@ function unitForm(u,key){
       <div class="field"><label>Situação do contrato</label><input id="u-contract" value="${esc(u.contractStatus)}" placeholder="Ex.: ativo"></div>
       ${isGir?`<div class="field"><label>⚡ UC de energia individual</label><input id="u-energy" value="${esc(u.energyUC||'')}" placeholder="Digite a UC"></div>`:''}
     </div>
+    ${parkingHTML}
     <div class="section-title">Financeiro</div>
     <div class="card">
       <button class="btn" onclick="saveUnit();openPayment('${key}')">+ Registrar pagamento</button>
