@@ -168,10 +168,10 @@
   async function loadCloudData() {
     if (!authUser) throw new Error('Usuário não autenticado');
     const owner = authUser.id;
-    const [propertiesRes, unitsRes, avulsosRes, paymentsRes, expensesRes] = await Promise.all([
-      sb.from('properties').select('*').eq('owner_id', owner), sb.from('units').select('*').eq('owner_id', owner), sb.from('avulsos').select('*').eq('owner_id', owner), sb.from('payments').select('*').eq('owner_id', owner), sb.from('expenses').select('*').eq('owner_id', owner)
+    const [propertiesRes, unitsRes, avulsosRes, paymentsRes, expensesRes, parkingRes] = await Promise.all([
+      sb.from('properties').select('*').eq('owner_id', owner), sb.from('units').select('*').eq('owner_id', owner), sb.from('avulsos').select('*').eq('owner_id', owner), sb.from('payments').select('*').eq('owner_id', owner), sb.from('expenses').select('*').eq('owner_id', owner), sb.from('parking_spots').select('*').eq('owner_id', owner)
     ]);
-    for (const res of [propertiesRes, unitsRes, avulsosRes, paymentsRes, expensesRes]) if (res.error) throw res.error;
+    for (const res of [propertiesRes, unitsRes, avulsosRes, paymentsRes, expensesRes, parkingRes]) if (res.error) throw res.error;
     const fresh = clone(defaults); fresh.avulsos = []; fresh.expenses = [];
     propertyRowsByCode = {}; const propertyById = {};
     (propertiesRes.data || []).forEach(p => { propertyRowsByCode[p.code]=p; propertyById[p.id]=p; if(p.code==='villa') fresh.properties.villa={...fresh.properties.villa,_id:p.id,energyUC:p.energy_uc||'',waterUC:p.water_uc||'',investmentOriginal:p.investment_original==null?800000:Number(p.investment_original),currentValue:p.current_value==null?1500000:Number(p.current_value)}; else if(p.code==='girassol') fresh.properties.girassol={...fresh.properties.girassol,_id:p.id,waterHydrometer:p.water_hydrometer||'',investmentOriginal:p.investment_original==null?205000:Number(p.investment_original),currentValue:p.current_value==null?400000:Number(p.current_value)}; else if(p.code==='oca') fresh.properties.oca={...fresh.properties.oca,_id:p.id,investmentOriginal:p.investment_original==null?null:Number(p.investment_original),currentValue:p.current_value==null?null:Number(p.current_value)}; });
@@ -180,8 +180,11 @@
     const avulsoById={}; fresh.avulsos=(avulsosRes.data||[]).map(row=>{const a={id:row.id,_id:row.id,name:row.name||'',type:row.type||row.description||'Outro',description:row.description||'',rent:row.monthly_rent==null?'':String(row.monthly_rent),dueDay:row.due_day==null?'':String(row.due_day),status:row.status||'livre',tenant:row.tenant_name||'',phone:row.phone||'',notes:row.notes||'',payments:[]};avulsoById[row.id]=a;return a;});
     (paymentsRes.data||[]).forEach(row=>{const p={_id:row.id,competence:row.competence||'',date:row.payment_date||'',value:row.amount==null?0:Number(row.amount),method:row.method||'',note:row.notes||''};if(row.unit_id&&unitById[row.unit_id])unitById[row.unit_id].payments.push(p);if(row.avulso_id&&avulsoById[row.avulso_id])avulsoById[row.avulso_id].payments.push(p);});
     fresh.expenses=(expensesRes.data||[]).map(row=>({_id:row.id,property:row.property_id&&propertyById[row.property_id]?propertyById[row.property_id].name:'Locações Avulsas',category:row.category||'Outros',description:row.description||'',value:row.amount==null?0:Number(row.amount),date:row.expense_date||'',notes:row.notes||'',_propertyId:row.property_id||null,_unitId:row.unit_id||null}));
+    fresh.parkingSpots=(parkingRes.data||[]).map(row=>{const u=row.unit_id&&unitById[row.unit_id];return {id:row.id,type:row.spot_type,number:Number(row.spot_number),unitKey:u?Object.keys(fresh.units).find(k=>fresh.units[k]===u)||'':''};});
     db=fresh; localStorage.setItem(STORE,JSON.stringify(db)); refreshAll();
   }
+
+  window.saveParkingSpot=async function(id,unitKey){if(!authUser)return false;const spot=(db.parkingSpots||[]).find(s=>s.id===id);if(!spot)return false;const unit=unitKey?db.units[unitKey]:null;const {error}=await sb.from('parking_spots').update({unit_id:unit?unit._id:null,updated_at:new Date().toISOString()}).eq('id',id).eq('owner_id',authUser.id);if(error){console.error(error);alert('Não foi possível salvar a vaga.');return false;}spot.unitKey=unitKey||'';localStorage.setItem(STORE,JSON.stringify(db));renderVillaParking();toast('Vaga atualizada');return true;};
 
   function propertyIdFromName(name){if(name==='Villa Park')return propertyRowsByCode.villa?.id||null;if(name==='Residencial Girassol')return propertyRowsByCode.girassol?.id||null;if(name==='Oca Urbana')return propertyRowsByCode.oca?.id||null;return null;}
 
