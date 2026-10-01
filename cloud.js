@@ -43,13 +43,12 @@
       </div>
       <div id="qh-login-card" class="qh-auth-card hide">
         <div class="qh-auth-brand">QUALYHOUSE CONTROL</div>
-        <div class="muted">Acesso protegido</div>
+        <div class="muted">Acesso protegido sem senha</div>
         <div class="qh-auth-title">Entrar</div>
-        <div class="muted" style="margin-bottom:18px">Use o e-mail e a senha cadastrados no Qualyhouse.</div>
+        <div class="muted" style="margin-bottom:18px">Toque no botão abaixo e enviaremos um link de acesso para o seu e-mail. Depois do primeiro acesso, o iPhone mantém sua sessão automaticamente.</div>
         <form id="qh-login-form">
-          <div class="field"><label>E-mail</label><input id="qh-email" type="email" autocomplete="username" required></div>
-          <div class="field"><label>Senha</label><input id="qh-password" type="password" autocomplete="current-password" required></div>
-          <button id="qh-login-btn" class="btn" type="submit">Entrar</button>
+          <input id="qh-email" type="hidden" value="brunapupo@hotmail.com">
+          <button id="qh-login-btn" class="btn" type="submit">Entrar sem senha</button>
           <div id="qh-auth-msg" class="qh-auth-msg"></div>
         </form>
       </div>`;
@@ -102,35 +101,27 @@
   async function signIn(event) {
     event.preventDefault();
     const email = document.getElementById('qh-email').value.trim();
-    const password = document.getElementById('qh-password').value;
     const btn = document.getElementById('qh-login-btn');
     btn.disabled = true;
-    btn.textContent = 'Entrando...';
+    btn.textContent = 'Enviando link...';
     setAuthMessage('');
 
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error || !data.user) {
-      setAuthMessage('E-mail ou senha inválidos. Confira os dados e tente novamente.', true);
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false }
+    });
+
+    if (error) {
+      console.error(error);
+      setAuthMessage('Não foi possível enviar o link de acesso. Tente novamente.', true);
       btn.disabled = false;
-      btn.textContent = 'Entrar';
+      btn.textContent = 'Entrar sem senha';
       return;
     }
 
-    authUser = data.user;
-    showLoading();
-    try {
-      await loadCloudData();
-      showApp();
-      showScreen('home');
-    } catch (err) {
-      console.error(err);
-      await sb.auth.signOut();
-      authUser = null;
-      showLogin('Não foi possível carregar os dados da nuvem. Tente novamente.');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Entrar';
-    }
+    setAuthMessage('Link enviado para brunapupo@hotmail.com. Abra o e-mail e toque no link para entrar.');
+    btn.disabled = false;
+    btn.textContent = 'Enviar link novamente';
   }
 
   window.signOutQualyhouse = async function () {
