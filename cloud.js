@@ -108,7 +108,10 @@
 
     const { error } = await sb.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: false }
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: 'https://brunapupo-cloud.github.io/Qualyhouse-control/'
+      }
     });
 
     if (error) {
