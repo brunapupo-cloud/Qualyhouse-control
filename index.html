@@ -252,18 +252,28 @@ function renderMetrics(){
   document.getElementById('m-recebido').textContent=money(received);
   document.getElementById('m-despesas').textContent=money(expenses);
   document.getElementById('m-resultado').textContent=money(received-expenses);
-  // Alpha: pending/overdue depend on filled rent+dueDay and current status ocupado.
+  // Pendente: somente aluguéis que vencem hoje ou já venceram e ainda não foram pagos.
+  // Atrasado: somente aluguéis com vencimento anterior a hoje e ainda não pagos.
   let pend=0,over=0; const day=new Date().getDate();
+  const monthPayments=thisMonthPayments();
   Object.values(db.units).forEach(u=>{
     if(u.status==='ocupado' && Number(u.rent)>0){
-      const has=thisMonthPayments().some(p=>p.source===`${u.property} • ${u.unit}`);
-      if(!has){ if(Number(u.dueDay)&&day>Number(u.dueDay)) over+=Number(u.rent); else pend+=Number(u.rent);}
+      const due=Number(u.dueDay);
+      const has=monthPayments.some(p=>p.source===`${u.property} • ${u.unit}`);
+      if(!has && due && day>=due){
+        pend+=Number(u.rent);
+        if(day>due) over+=Number(u.rent);
+      }
     }
   });
   db.avulsos.forEach(a=>{
     if(a.status==='ocupado' && Number(a.rent)>0){
-      const has=thisMonthPayments().some(p=>p.source===(a.name||a.type));
-      if(!has){ if(Number(a.dueDay)&&day>Number(a.dueDay)) over+=Number(a.rent); else pend+=Number(a.rent);}
+      const due=Number(a.dueDay);
+      const has=monthPayments.some(p=>p.source===(a.name||a.type));
+      if(!has && due && day>=due){
+        pend+=Number(a.rent);
+        if(day>due) over+=Number(a.rent);
+      }
     }
   });
   document.getElementById('m-pendente').textContent=money(pend);
