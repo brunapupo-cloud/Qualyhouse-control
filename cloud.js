@@ -7,6 +7,8 @@
 
   let authUser = null;
   let propertyRowsByCode = {};
+  let cloudLoadInProgress = false;
+  let cloudLoadedForUser = null;
 
   const appEl = document.querySelector('.app');
   if (appEl) appEl.classList.add('hide');
@@ -133,30 +135,64 @@
     showLogin('Você saiu da conta com segurança.');
   };
 
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function loadAndShowApp(user) {
+    if (!user) return;
+    if (cloudLoadedForUser === user.id) {
+      authUser = user;
+      showApp();
+      return;
+    }
+    if (cloudLoadInProgress) return;
+
+    cloudLoadInProgress = true;
+    authUser = user;
+    showLoading();
+
+    let lastError = null;
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      try {
+        await loadCloudData();
+        cloudLoadedForUser = user.id;
+        showApp();
+        showScreen('home');
+
+        // Remove access tokens from the visible URL after Supabase has stored the session.
+        if (window.location.hash) {
+          history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        }
+        cloudLoadInProgress = false;
+        return;
+      } catch (err) {
+        lastError = err;
+        console.error('Falha ao carregar dados da nuvem. Tentativa', attempt, err);
+        if (attempt < 4) await wait(700 * attempt);
+      }
+    }
+
+    cloudLoadInProgress = false;
+    console.error(lastError);
+    showLogin('Seu acesso foi confirmado, mas os dados ainda não carregaram. Feche e abra o Qualyhouse novamente.');
+  }
+
   async function initAuth() {
     showLoading();
-    const { data: sessionData } = await sb.auth.getSession();
-    if (!sessionData.session) {
+
+    // Dá tempo para o Supabase processar o hash do magic link e persistir a sessão.
+    await wait(250);
+
+    const { data: sessionData, error: sessionError } = await sb.auth.getSession();
+    if (sessionError) console.error(sessionError);
+
+    if (!sessionData?.session?.user) {
       showLogin('');
       return;
     }
 
-    const { data, error } = await sb.auth.getUser();
-    if (error || !data.user) {
-      await sb.auth.signOut();
-      showLogin('');
-      return;
-    }
-
-    authUser = data.user;
-    try {
-      await loadCloudData();
-      showApp();
-      showScreen('home');
-    } catch (err) {
-      console.error(err);
-      showLogin('Não foi possível carregar os dados da nuvem. Verifique sua internet e tente novamente.');
-    }
+    await loadAndShowApp(sessionData.session.user);
   }
 
   async function loadCloudData() {
@@ -194,6 +230,17 @@
   newAvulso=async function(){if(!authUser)return;const name=prompt('Identificação do imóvel (ex.: Casa Centro):');if(name===null)return;const type=prompt('Tipo (Casa, Chácara, Apartamento, Sala, Kitnet ou Outro):','Casa')||'Outro';const{data,error}=await sb.from('avulsos').insert({owner_id:authUser.id,name:name.trim(),type:type.trim(),description:null,monthly_rent:null,due_day:null,status:'livre',tenant_name:null,phone:null,notes:null}).select().single();if(error){console.error(error);return alert('Não foi possível criar a locação na nuvem.');}db.avulsos.push({id:data.id,_id:data.id,name:data.name||'',type:data.type||'Outro',rent:'',dueDay:'',status:data.status||'livre',tenant:'',phone:'',notes:'',payments:[]});save();renderAvulsos();editAvulso(db.avulsos.length-1);};
   saveAvulso=async function(i){if(!authUser)return;const a=db.avulsos[i];if(!a?._id)return alert('Locação não encontrada na nuvem.');a.type=document.getElementById('a-type').value.trim();a.name=document.getElementById('a-name').value.trim();a.status=document.getElementById('a-status').value;a.rent=document.getElementById('a-rent').value.replace(',','.');a.dueDay=document.getElementById('a-due').value.trim();a.tenant=document.getElementById('a-tenant').value.trim();a.phone=document.getElementById('a-phone').value.trim();a.notes=document.getElementById('a-notes').value;const{error}=await sb.from('avulsos').update({name:a.name,type:a.type||null,monthly_rent:a.rent===''?null:Number(a.rent),due_day:a.dueDay===''?null:Number(a.dueDay),status:a.status,tenant_name:a.tenant||null,phone:a.phone||null,notes:a.notes||null,updated_at:new Date().toISOString()}).eq('id',a._id).eq('owner_id',authUser.id);if(error){console.error(error);return alert('Não foi possível salvar a locação na nuvem.');}save();document.getElementById('unit-dialog').close();renderAvulsos();toast('Locação salva na nuvem');};
   importData=function(){alert('A restauração de backup será habilitada em uma próxima etapa para evitar sobrescrever dados da nuvem por engano.');};
-  sb.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){authUser=null;showLogin('');}});
+  sb.auth.onAuthStateChange((event, session)=>{
+    if(event==='SIGNED_OUT'){
+      authUser=null;
+      cloudLoadedForUser=null;
+      showLogin('');
+      return;
+    }
+    if(event==='SIGNED_IN' && session?.user){
+      // Run outside the auth callback to avoid racing with session persistence.
+      setTimeout(()=>loadAndShowApp(session.user), 0);
+    }
+  });
   initAuth();
 })();
