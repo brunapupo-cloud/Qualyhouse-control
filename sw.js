@@ -1,4 +1,4 @@
-const CACHE='qualyhouse-alpha-v30';
+const CACHE='qualyhouse-alpha-v31';
 const ASSETS=['./','index.html','manifest.webmanifest','cloud.js','auth-ui.js','assets/villa-park-terreo.jpeg','assets/villa-park-superior.jpeg'];
 
 self.addEventListener('install',e=>{
@@ -43,6 +43,15 @@ self.addEventListener('fetch',e=>{
         throw err;
       }
     })());
+    return;
+  }
+
+  if(url.origin===self.location.origin && (url.pathname.endsWith('/cloud.js') || url.pathname.endsWith('/auth-ui.js'))){
+    e.respondWith(fetch(req,{cache:'no-store'}).then(response=>{
+      const copy=response.clone();
+      caches.open(CACHE).then(c=>c.put(req,copy));
+      return response;
+    }).catch(()=>caches.match(req)));
     return;
   }
 
