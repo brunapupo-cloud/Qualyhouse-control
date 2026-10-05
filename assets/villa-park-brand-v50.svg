@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 210" role="img" aria-label="Villa Park Residencial">
+  <rect width="420" height="210" fill="#fff"/>
+  <g transform="translate(165 8)">
+    <path d="M54 86C43 57 51 28 86 5c2 34-11 64-41 88Z" fill="#8FA28B"/>
+    <path d="M44 91C31 62 14 50 0 48c4 24 18 40 44 43Z" fill="#AAB8A6"/>
+    <path d="M45 92C49 59 63 34 78 16" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <text x="210" y="132" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="38" font-weight="400" letter-spacing="10" fill="#111">VILLA PARK</text>
+  <text x="210" y="168" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="17" letter-spacing="10" fill="#222">RESIDENCIAL</text>
+  <line x1="55" y1="183" x2="365" y2="183" stroke="#333" stroke-width="1.5"/>
+</svg>
