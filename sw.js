@@ -1,5 +1,5 @@
-const CACHE='qualyhouse-alpha-v42';
-const ASSETS=['./','index.html','manifest.webmanifest','cloud.js','auth-ui.js','assets/villa-park-terreo.jpeg','assets/villa-park-superior.jpeg'];
+const CACHE='qualyhouse-alpha-v43';
+const ASSETS=['./','index.html','manifest.webmanifest','cloud.js','auth-ui.js','assets/villa-park-terreo.jpeg','assets/villa-park-superior.jpeg','assets/villa-leaf.svg','assets/oca-wordmark.svg'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
