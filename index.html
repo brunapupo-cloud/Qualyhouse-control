@@ -317,7 +317,7 @@ function openProperty(which){
   } else if(which==='girassol'){
     let rows='';
     for(let i=1;i<=5;i++){const id=String(i).padStart(2,'0'),u=db.units['girassol-'+id];
-      rows+=`<div class="unit-row" onclick="openUnit('girassol-${id}')"><div><strong>APTO ${id}</strong><div class="muted">UC energia: ${esc(u.energyUC||'não informada')}</div></div><span class="status-badge ${u.status}">${statusLabel(u.status)}</span></div>`;
+      rows+=`<div class="unit-row" onclick="openUnit('girassol-${id}')"><div><strong>APTO ${id}${u.tenant&&u.tenant.trim()?' • '+esc(u.tenant):''}</strong><div class="muted">UC energia: ${esc(u.energyUC||'não informada')}</div></div><span class="status-badge ${u.status}">${statusLabel(u.status)}</span></div>`;
     }
     el.innerHTML=`
       <div style="margin-top:14px"><h2 style="margin:0">🌻 Residencial Girassol</h2><div class="muted">5 apartamentos térreos</div></div>
