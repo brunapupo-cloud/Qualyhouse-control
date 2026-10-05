@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#111827" />
+  <meta name="theme-color" content="#4E6485" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Qualyhouse" />
@@ -41,8 +41,22 @@
     .metric[onclick]:active,.property:active,.unit-row[onclick]:active,.payment[onclick]:active{transform:scale(.99)}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .row-between{display:flex;justify-content:space-between;align-items:center;gap:10px}
-    .property{cursor:pointer}
-    .property .title{font-weight:800;font-size:17px}
+    .property{cursor:pointer;position:relative;overflow:hidden;background:#fff!important;border-color:#D3DCE7!important;padding:14px 15px}
+    .property::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#4E6485;opacity:.78}
+    .property .title{font-weight:760;font-size:16px;letter-spacing:-.01em}
+    .property-row{display:flex;align-items:center;gap:12px;min-width:0}
+    .property-copy{min-width:0;flex:1}
+    .brand-icon{width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:#EEF2F7;border:1px solid #DCE3EC;display:grid;place-items:center;font-size:21px}
+    .brand-icon img{width:28px;height:28px;display:block}
+    .brand-icon.oca{width:72px;flex-basis:72px;background:#fff}
+    .brand-icon.oca img{width:62px;height:auto}
+    .property-arrow{font-size:23px;font-weight:800;color:#4E6485;opacity:.74;line-height:1}
+    .property .muted{margin-top:3px;line-height:1.35}
+    .property-name{font-weight:760;color:#0B1736}
+    .property-name .descriptor{font-weight:560;color:#66758A}
+    .oca-heading{display:inline-block;width:min(230px,65vw);vertical-align:middle}
+    .oca-heading img{display:block;width:100%;height:auto}
+    .screen h2{color:#0B1736;letter-spacing:-.025em}
     .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:12px;background:#EEF2F7}
     .dot{width:10px;height:10px;border-radius:50%}
     .dot.livre{background:var(--livre)}.dot.ocupado{background:var(--ocupado)}.dot.reserva{background:var(--reserva)}.dot.manutencao{background:var(--manutencao)}
@@ -55,7 +69,7 @@
     .plan-wrap img{width:100%;display:block;opacity:.96}
     .apt-btn{position:absolute;transform:translate(-50%,-50%);min-width:44px;height:38px;padding:0 10px;border-radius:12px;border:2px solid rgba(255,255,255,.9);color:#fff;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,.18)}
     .apt-btn.livre{background:var(--livre)}.apt-btn.ocupado{background:var(--ocupado)}.apt-btn.reserva{background:var(--reserva)}.apt-btn.manutencao{background:var(--manutencao)}
-    .section-title{font-size:14px;font-weight:800;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.04em;color:#4E6485}
+    .section-title{font-size:12px;font-weight:800;margin:20px 0 9px;text-transform:uppercase;letter-spacing:.09em;color:#66758A}
     .field{margin-bottom:12px}.field label{display:block;font-size:12px;font-weight:700;color:#4E6485;margin-bottom:6px}
     .field input,.field select,.field textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff}
     .field textarea{min-height:88px;resize:vertical}
@@ -94,16 +108,16 @@
       <div class="section-title">Empreendimentos</div>
       <div class="list">
         <div class="card property" onclick="openProperty('villa')">
-          <div class="row-between"><div><div class="title">VILLA PARK | RESIDENCIAL</div><div class="muted">16 apartamentos • térreo + superior</div></div><span>›</span></div>
+          <div class="property-row"><div class="brand-icon"><img src="assets/villa-leaf.svg" alt=""></div><div class="property-copy"><div class="title property-name">Villa Park <span class="descriptor">Residencial</span></div><div class="muted">16 apartamentos • térreo + superior</div></div><span class="property-arrow">›</span></div>
         </div>
         <div class="card property" onclick="openProperty('girassol')">
-          <div class="row-between"><div><div class="title">🌻 Residencial Girassol</div><div class="muted">5 apartamentos • térreo</div></div><span>›</span></div>
+          <div class="property-row"><div class="brand-icon" aria-hidden="true">🌻</div><div class="property-copy"><div class="title property-name">Residencial Girassol</div><div class="muted">5 apartamentos • térreo</div></div><span class="property-arrow">›</span></div>
         </div>
         <div class="card property" onclick="openProperty('oca')">
-          <div class="row-between"><div><div class="title">Oca Urbana</div><div class="muted">Empreendimento futuro</div></div><span>›</span></div>
+          <div class="property-row"><div class="brand-icon oca"><img src="assets/oca-wordmark.svg" alt="Oca Urbana"></div><div class="property-copy"><div class="title property-name">Oca Urbana</div><div class="muted">Empreendimento futuro</div></div><span class="property-arrow">›</span></div>
         </div>
         <div class="card property" onclick="openProperty('avulsos')">
-          <div class="row-between"><div><div class="title">🏠 Locações Avulsas</div><div class="muted">Casa, chácara, apartamento e outros</div></div><span>›</span></div>
+          <div class="property-row"><div class="brand-icon" aria-hidden="true">⌂</div><div class="property-copy"><div class="title property-name">Locações Avulsas</div><div class="muted">Casa, chácara, apartamento e outros</div></div><span class="property-arrow">›</span></div>
         </div>
       </div>
 
@@ -119,10 +133,10 @@
     <section id="screen-properties" class="screen">
       <div class="section-title">Imóveis</div>
       <div class="list">
-        <div class="card property" onclick="openProperty('villa')"><div class="title">Villa Park</div><div class="muted">01–16</div></div>
-        <div class="card property" onclick="openProperty('girassol')"><div class="title">Residencial Girassol</div><div class="muted">01–05</div></div>
-        <div class="card property" onclick="openProperty('oca')"><div class="title">Oca Urbana</div><div class="muted">Preparado para cadastro futuro</div></div>
-        <div class="card property" onclick="openProperty('avulsos')"><div class="title">Locações Avulsas</div><div class="muted" id="av-count">0 imóveis cadastrados</div></div>
+        <div class="card property" onclick="openProperty('villa')"><div class="property-row"><div class="brand-icon"><img src="assets/villa-leaf.svg" alt=""></div><div class="property-copy"><div class="title property-name">Villa Park <span class="descriptor">Residencial</span></div><div class="muted">Apartamentos 01–16</div></div><span class="property-arrow">›</span></div></div>
+        <div class="card property" onclick="openProperty('girassol')"><div class="property-row"><div class="brand-icon" aria-hidden="true">🌻</div><div class="property-copy"><div class="title property-name">Residencial Girassol</div><div class="muted">Apartamentos 01–05</div></div><span class="property-arrow">›</span></div></div>
+        <div class="card property" onclick="openProperty('oca')"><div class="property-row"><div class="brand-icon oca"><img src="assets/oca-wordmark.svg" alt="Oca Urbana"></div><div class="property-copy"><div class="title property-name">Oca Urbana</div><div class="muted">Preparado para cadastro futuro</div></div><span class="property-arrow">›</span></div></div>
+        <div class="card property" onclick="openProperty('avulsos')"><div class="property-row"><div class="brand-icon" aria-hidden="true">⌂</div><div class="property-copy"><div class="title property-name">Locações Avulsas</div><div class="muted" id="av-count">0 imóveis cadastrados</div></div><span class="property-arrow">›</span></div></div>
       </div>
     </section>
 
@@ -417,7 +431,7 @@ function openProperty(which){
   const el=document.getElementById('property-content');
   if(which==='villa'){
     el.innerHTML=`
-      <div class="row-between" style="margin-top:14px"><div><h2 style="margin:0">VILLA PARK | RESIDENCIAL</h2><div class="muted">Mapa de apartamentos</div></div></div>
+      <div class="row-between" style="margin-top:14px"><div class="property-row"><div class="brand-icon"><img src="assets/villa-leaf.svg" alt=""></div><div><h2 style="margin:0">Villa Park Residencial</h2><div class="muted">Mapa de apartamentos</div></div></div></div>
       ${legendHTML()}
       <button class="btn secondary" style="width:100%;margin:4px 0 12px" onclick="renderVillaParking()">🚗 Vagas de Garagem</button>
       <div class="tabs"><button id="tab-ground" class="btn" onclick="setFloor('ground')">Térreo</button><button id="tab-upper" class="btn secondary" onclick="setFloor('upper')">Superior</button></div>
@@ -435,7 +449,7 @@ function openProperty(which){
       rows+=`<div class="unit-row" onclick="openUnit('girassol-${id}')"><div><strong>APTO ${id}${u.tenant&&u.tenant.trim()?' • '+esc(u.tenant):''}</strong><div class="muted">UC energia: ${esc(u.energyUC||'não informada')}</div></div><span class="status-badge ${u.status}">${statusLabel(u.status)}</span></div>`;
     }
     el.innerHTML=`
-      <div style="margin-top:14px"><h2 style="margin:0">🌻 Residencial Girassol</h2><div class="muted">5 apartamentos térreos</div></div>
+      <div class="property-row" style="margin-top:14px"><div class="brand-icon" aria-hidden="true">🌻</div><div><h2 style="margin:0">Residencial Girassol</h2><div class="muted">5 apartamentos térreos</div></div></div>
       ${legendHTML()}
       <div class="card" style="margin:12px 0">
         <div class="field"><label>💧 Hidrômetro geral</label><div class="row"><input id="gir-water" value="${esc(db.properties.girassol.waterHydrometer||'')}" placeholder="Digite o número"><button class="btn secondary" onclick="copyVal('gir-water')">Copiar</button></div></div>
@@ -444,7 +458,7 @@ function openProperty(which){
       ${propertyFinanceHTML('girassol','Residencial Girassol')}
       <div class="section-title">Apartamentos</div><div class="list">${rows}</div>`;
   } else if(which==='oca'){
-    el.innerHTML=`<div style="margin-top:14px"><h2>Oca Urbana</h2><div class="card"><h3>Preparado para o futuro</h3><p class="muted">A estrutura poderá receber unidades, mapa, UCs, pagamentos, manutenção e financeiro quando o empreendimento estiver pronto.</p></div></div>`;
+    el.innerHTML=`<div style="margin-top:14px"><div class="oca-heading"><img src="assets/oca-wordmark.svg" alt="Oca Urbana"></div><div class="card"><h3>Preparado para o futuro</h3><p class="muted">A estrutura poderá receber unidades, mapa, UCs, pagamentos, manutenção e financeiro quando o empreendimento estiver pronto.</p></div></div>`;
   } else if(which==='avulsos'){
     renderAvulsos();
   }
@@ -1036,7 +1050,7 @@ function importData(ev){
   const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Backup importado com sucesso.')}catch(e){alert('Arquivo inválido.')}};r.readAsText(f)
 }
 
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=38',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=43',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 refreshAll();
 </script>
 </body>
