@@ -624,10 +624,15 @@ function quickPayment(){
     <div class="field"><label>Unidade</label><select id="qp-unit">${options}</select></div>
     <button class="btn" style="width:100%" onclick="document.getElementById('payment-dialog').close();openPayment(document.getElementById('qp-unit').value)">Continuar</button>`;
   document.getElementById('payment-dialog').showModal();
-}function openExpense(){
+}function toggleAvulsoExpenseTarget(){
+  const wrap=document.getElementById('exp-avulso-wrap'),sel=document.getElementById('exp-property');
+  if(wrap&&sel)wrap.style.display=sel.value==='Locações Avulsas'?'block':'none';
+}
+function openExpense(){
   const today=new Date().toISOString().slice(0,10);
   document.getElementById('expense-body').innerHTML=`
-    <div class="field"><label>Empreendimento</label><select id="exp-property"><option>Villa Park</option><option>Residencial Girassol</option><option>Oca Urbana</option><option>Locações Avulsas</option></select></div>
+    <div class="field"><label>Empreendimento</label><select id="exp-property" onchange="toggleAvulsoExpenseTarget()"><option>Villa Park</option><option>Residencial Girassol</option><option>Oca Urbana</option><option>Locações Avulsas</option></select></div>
+    <div class="field" id="exp-avulso-wrap" style="display:none"><label>Imóvel avulso</label><select id="exp-avulso"><option value="">Despesa geral das locações avulsas</option>${(db.avulsos||[]).map(a=>`<option value="${esc(a._id||'')}">${esc(a.name||a.type)}</option>`).join('')}</select></div>
     <div class="field"><label>Categoria</label><select id="exp-category"><option>Manutenção</option><option>Água</option><option>Energia</option><option>Internet</option><option>Limpeza</option><option>Material</option><option>Impostos</option><option>Outros</option></select></div>
     <div class="field"><label>Descrição</label><input id="exp-description"></div>
     <div class="field"><label>Valor</label><input id="exp-value" inputmode="decimal" placeholder="0,00"></div>
@@ -645,6 +650,7 @@ function saveExpense(){
   if(!description||!value){alert('Preencha a descrição e o valor da despesa.');return;}
   db.expenses.push({
     property:document.getElementById('exp-property').value,
+    _avulsoId:document.getElementById('exp-property').value==='Locações Avulsas'?(document.getElementById('exp-avulso')?.value||null):null,
     category:document.getElementById('exp-category').value,
     description,
     value,
@@ -885,8 +891,16 @@ function newAvulso(){
   db.avulsos.push({id:Date.now(),name:name.trim(),type:type.trim(),rent:'',dueDay:'',entryDate:'',status:'livre',tenant:'',phone:'',notes:'',payments:[]});
   save();renderAvulsos();editAvulso(db.avulsos.length-1);
 }
+function avulsoFinanceSummary(a){
+  const now=new Date(),year=now.getFullYear(),month=now.getMonth();
+  let monthlyRevenue=0,annualRevenue=0,monthlyExpenses=0,annualExpenses=0;
+  (a.payments||[]).forEach(p=>{if(!p.date)return;const d=new Date(p.date+'T12:00:00');if(d.getFullYear()===year){annualRevenue+=Number(p.value||0);if(d.getMonth()===month)monthlyRevenue+=Number(p.value||0);}});
+  (db.expenses||[]).filter(e=>e._avulsoId===a._id).forEach(e=>{if(!e.date)return;const d=new Date(e.date+'T12:00:00');if(d.getFullYear()===year){annualExpenses+=Number(e.value||0);if(d.getMonth()===month)monthlyExpenses+=Number(e.value||0);}});
+  return {monthlyRevenue,annualRevenue,monthlyExpenses,annualExpenses,monthlyNet:monthlyRevenue-monthlyExpenses,annualNet:annualRevenue-annualExpenses};
+}
 function editAvulso(i){
   const a=db.avulsos[i];
+  const f=avulsoFinanceSummary(a);
   const pays=(a.payments||[]).slice().sort((x,y)=>(y.date||'').localeCompare(x.date||''));
   const history=pays.map(p=>'<div class="payment" '+(p._id?'onclick="openEditAvulsoPayment('+i+',\''+p._id+'\')" style="cursor:pointer"':'')+'><div class="row-between"><strong>'+esc(p.competence||'Competência não informada')+'</strong><strong>'+money(p.value)+'</strong></div><div class="muted">'+esc(p.date||'')+' • '+esc(p.method||'')+'</div>'+(p.note?'<div class="muted">'+esc(p.note)+'</div>':'')+'</div>').join('');
   document.getElementById('unit-title').textContent=a.name||a.type;
@@ -903,6 +917,16 @@ function editAvulso(i){
       <div class="field"><label>Telefone</label><input id="a-phone" value="${esc(a.phone)}"></div>
       <div class="field"><label>Observações</label><textarea id="a-notes">${esc(a.notes)}</textarea></div>
       <button class="btn" style="width:100%" onclick="saveAvulso(${i})">Salvar alterações</button>
+    </div>
+    <div class="section-title">Resumo financeiro • ${esc(a.name||a.type)}</div>
+    <div class="card">
+      <div class="row-between"><span class="muted">Faturamento do mês</span><strong>${money(f.monthlyRevenue)}</strong></div>
+      <div class="row-between" style="margin-top:10px"><span class="muted">Despesas do mês</span><strong>${money(f.monthlyExpenses)}</strong></div>
+      <div class="row-between" style="margin-top:10px"><span>Faturamento líquido mensal</span><strong>${money(f.monthlyNet)}</strong></div>
+      <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
+      <div class="row-between"><span class="muted">Faturamento anual</span><strong>${money(f.annualRevenue)}</strong></div>
+      <div class="row-between" style="margin-top:10px"><span class="muted">Despesas anuais</span><strong>${money(f.annualExpenses)}</strong></div>
+      <div class="row-between" style="margin-top:10px"><span>Faturamento líquido anual</span><strong>${money(f.annualNet)}</strong></div>
     </div>
     <div class="section-title">Financeiro</div>
     <div class="card"><button class="btn" style="width:100%" onclick="openAvulsoPayment(${i})">+ Registrar pagamento</button></div>
