@@ -20,7 +20,7 @@
     button,input,select,textarea{font:inherit}
     .app{max-width:760px;margin:0 auto;min-height:100vh;padding-bottom:88px}
     header{position:sticky;top:0;z-index:20;background:rgba(247,249,252,.96);backdrop-filter:blur(14px);padding:16px 16px 10px;border-bottom:1px solid var(--line)}
-    .brand{font-weight:800;letter-spacing:.04em}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .brand{font-weight:850;letter-spacing:.055em;font-size:15px;color:#0B1736}.sub{font-size:12px;color:var(--muted);margin-top:3px}
     .screen{display:none;padding:16px}.screen.active{display:block}
     .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(17,24,39,.05)}
@@ -57,6 +57,40 @@
     .oca-heading{display:inline-block;width:min(230px,65vw);vertical-align:middle}
     .oca-heading img{display:block;width:100%;height:auto}
     .screen h2{color:#0B1736;letter-spacing:-.025em}
+    .home-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:2px 0 14px}
+    .home-intro .eyebrow{font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#7B8798}
+    .home-intro .headline{font-size:24px;font-weight:820;letter-spacing:-.035em;color:#0B1736;margin-top:4px}
+    .home-intro .period{font-size:12px;color:#7B8798;text-align:right;white-space:nowrap}
+    .home-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .home-metrics .metric{min-height:112px;display:flex;flex-direction:column;justify-content:space-between;padding:15px 16px;background:#fff;border-color:#D8E1EB;box-shadow:0 10px 28px rgba(20,38,68,.06)}
+    .home-metrics .metric .metric-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .metric-icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#EEF2F7;color:#4E6485;font-weight:900;font-size:15px}
+    .metric .metric-label{font-size:12px;font-weight:700;color:#66758A}
+    .home-metrics .metric strong{font-size:24px;letter-spacing:-.03em;margin-top:8px;color:#0B1736}
+    .home-metrics .metric small{font-size:11px;color:#8A96A6;margin-top:5px}
+    .home-metrics .metric[onclick]{background:linear-gradient(180deg,#F8FAFD 0%,#EDF3F8 100%);border-color:#C9D6E3}
+    .home-metrics .metric[onclick]::after{content:'›';right:15px;top:auto;bottom:14px;transform:none;font-size:20px}
+    .home-metrics .result-card{grid-column:1/-1;min-height:104px;background:linear-gradient(135deg,#536B8E 0%,#435B7C 100%)!important;border-color:#435B7C!important;color:#fff}
+    .home-metrics .result-card .metric-label,.home-metrics .result-card small{color:rgba(255,255,255,.78)}
+    .home-metrics .result-card strong,.home-metrics .result-card::after{color:#fff}
+    .home-metrics .result-card .metric-icon{background:rgba(255,255,255,.14);color:#fff}
+    .home-section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:22px 0 10px}
+    .home-section-head .section-title{margin:0}
+    .home-section-head .section-note{font-size:11px;color:#8A96A6}
+    #screen-home .property-list{gap:12px}
+    #screen-home .property{border-radius:20px;padding:15px 16px;box-shadow:0 10px 26px rgba(20,38,68,.055)}
+    #screen-home .property::before{width:3px;opacity:.9}
+    #screen-home .brand-icon{width:46px;height:46px;flex-basis:46px;border-radius:14px;background:#F3F6FA}
+    #screen-home .brand-icon.oca{width:78px;flex-basis:78px}
+    #screen-home .property-name{font-size:16px}
+    #screen-home .property-arrow{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#EEF2F7;font-size:18px;opacity:1}
+    .shortcut-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .shortcut-btn{min-height:58px;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px;justify-content:flex-start;text-align:left;font-weight:750;border:1px solid #D6DFE9;background:#fff;color:#0B1736;box-shadow:0 6px 18px rgba(20,38,68,.04)}
+    .shortcut-btn .sicon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:#EEF2F7;color:#4E6485;flex:0 0 32px}
+    .shortcut-btn.primary{background:#4E6485;color:#fff;border-color:#4E6485}
+    .shortcut-btn.primary .sicon{background:rgba(255,255,255,.14);color:#fff}
+    .shortcut-btn.warning .sicon{background:#FFF4D8;color:#B58414}
+    @media(max-width:420px){.home-intro .headline{font-size:21px}.home-metrics .metric strong{font-size:21px}.shortcut-grid{grid-template-columns:1fr 1fr}}
     .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:12px;background:#EEF2F7}
     .dot{width:10px;height:10px;border-radius:50%}
     .dot.livre{background:var(--livre)}.dot.ocupado{background:var(--ocupado)}.dot.reserva{background:var(--reserva)}.dot.manutencao{background:var(--manutencao)}
@@ -97,16 +131,47 @@
 
   <main>
     <section id="screen-home" class="screen active">
-      <div class="grid">
-        <div class="card metric"><span class="muted">Recebido no mês</span><strong id="m-recebido">R$ 0,00</strong></div>
-        <div class="card metric" onclick="showPendingDetails()" style="cursor:pointer"><span class="muted">Pendente</span><strong id="m-pendente">R$ 0,00</strong><div class="muted" style="font-size:12px;margin-top:6px">Toque para ver</div></div>
-        <div class="card metric"><span class="muted">Atrasado</span><strong id="m-atrasado">R$ 0,00</strong></div>
-        <div class="card metric"><span class="muted">Despesas</span><strong id="m-despesas">R$ 0,00</strong></div>
-        <div class="card metric wide" onclick="showMonthlyStatusReport()" style="cursor:pointer"><span class="muted">Resultado do mês</span><strong id="m-resultado">R$ 0,00</strong><div class="muted" style="font-size:12px;margin-top:6px">Toque para ver o relatório</div></div>
+      <div class="home-intro">
+        <div>
+          <div class="eyebrow">Visão geral</div>
+          <div class="headline">Gestão dos recebimentos</div>
+        </div>
+        <div class="period">Resumo do mês atual</div>
       </div>
 
-      <div class="section-title">Empreendimentos</div>
-      <div class="list">
+      <div class="home-metrics">
+        <div class="card metric">
+          <div class="metric-top"><span class="metric-label">Recebido no mês</span><span class="metric-icon">R$</span></div>
+          <strong id="m-recebido">R$ 0,00</strong>
+          <small>Pagamentos registrados neste mês</small>
+        </div>
+        <div class="card metric" onclick="showPendingDetails()" style="cursor:pointer">
+          <div class="metric-top"><span class="metric-label">Pendente</span><span class="metric-icon">—</span></div>
+          <strong id="m-pendente">R$ 0,00</strong>
+          <small>Toque para ver os imóveis</small>
+        </div>
+        <div class="card metric">
+          <div class="metric-top"><span class="metric-label">Atrasado</span><span class="metric-icon">!</span></div>
+          <strong id="m-atrasado">R$ 0,00</strong>
+          <small>Recebimentos vencidos</small>
+        </div>
+        <div class="card metric">
+          <div class="metric-top"><span class="metric-label">Despesas</span><span class="metric-icon">−</span></div>
+          <strong id="m-despesas">R$ 0,00</strong>
+          <small>Despesas registradas</small>
+        </div>
+        <div class="card metric result-card" onclick="showMonthlyStatusReport()" style="cursor:pointer">
+          <div class="metric-top"><span class="metric-label">Resultado do mês</span><span class="metric-icon">↗</span></div>
+          <strong id="m-resultado">R$ 0,00</strong>
+          <small>Abrir relatório mensal completo</small>
+        </div>
+      </div>
+
+      <div class="home-section-head">
+        <div class="section-title">Empreendimentos</div>
+        <div class="section-note">Acesso rápido</div>
+      </div>
+      <div class="list property-list">
         <div class="card property" onclick="openProperty('villa')">
           <div class="property-row"><div class="brand-icon"><img src="assets/villa-leaf.svg" alt=""></div><div class="property-copy"><div class="title property-name">Villa Park <span class="descriptor">Residencial</span></div><div class="muted">16 apartamentos • térreo + superior</div></div><span class="property-arrow">›</span></div>
         </div>
@@ -121,12 +186,15 @@
         </div>
       </div>
 
-      <div class="section-title">Atalhos</div>
-      <div class="grid">
-        <button class="btn" onclick="quickPayment()">+ Registrar pagamento</button>
-        <button class="btn secondary" onclick="showScreen('finance')">Ver financeiro</button>
-        <button class="btn secondary" onclick="openProperty('avulsos')">+ Nova locação</button>
-        <button class="btn secondary" onclick="showOverdue()">⚠ Ver atrasados</button>
+      <div class="home-section-head">
+        <div class="section-title">Atalhos</div>
+        <div class="section-note">Ações frequentes</div>
+      </div>
+      <div class="shortcut-grid">
+        <button class="shortcut-btn primary" onclick="quickPayment()"><span class="sicon">＋</span><span>Registrar pagamento</span></button>
+        <button class="shortcut-btn" onclick="showScreen('finance')"><span class="sicon">$</span><span>Ver financeiro</span></button>
+        <button class="shortcut-btn" onclick="openProperty('avulsos')"><span class="sicon">⌂</span><span>Nova locação</span></button>
+        <button class="shortcut-btn warning" onclick="showOverdue()"><span class="sicon">!</span><span>Ver atrasados</span></button>
       </div>
     </section>
 
@@ -1050,7 +1118,7 @@ function importData(ev){
   const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Backup importado com sucesso.')}catch(e){alert('Arquivo inválido.')}};r.readAsText(f)
 }
 
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=43',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=44',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 refreshAll();
 </script>
 </body>
