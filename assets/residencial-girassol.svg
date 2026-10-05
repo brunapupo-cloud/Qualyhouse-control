@@ -1,15 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Residencial Girassol">
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="32" cy="30" r="8.5" fill="#E5B84E" stroke="#B58B2C" stroke-width="2"/>
-    <g fill="#EBCB77" stroke="#D2AA46" stroke-width="1.5">
-      <ellipse cx="32" cy="12" rx="5.2" ry="10"/>
-      <ellipse cx="32" cy="48" rx="5.2" ry="10"/>
-      <ellipse cx="14" cy="30" rx="10" ry="5.2"/>
-      <ellipse cx="50" cy="30" rx="10" ry="5.2"/>
-      <ellipse cx="19.3" cy="17.3" rx="5.2" ry="10" transform="rotate(-45 19.3 17.3)"/>
-      <ellipse cx="44.7" cy="42.7" rx="5.2" ry="10" transform="rotate(-45 44.7 42.7)"/>
-      <ellipse cx="44.7" cy="17.3" rx="5.2" ry="10" transform="rotate(45 44.7 17.3)"/>
-      <ellipse cx="19.3" cy="42.7" rx="5.2" ry="10" transform="rotate(45 19.3 42.7)"/>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" role="img" aria-label="Residencial Girassol">
+  <g transform="translate(180 48)" fill="#E3BE69">
+    <ellipse cx="0" cy="-27" rx="8" ry="20"/>
+    <ellipse cx="0" cy="27" rx="8" ry="20"/>
+    <ellipse cx="-27" cy="0" rx="20" ry="8"/>
+    <ellipse cx="27" cy="0" rx="20" ry="8"/>
+    <ellipse cx="-19" cy="-19" rx="8" ry="20" transform="rotate(-45 -19 -19)"/>
+    <ellipse cx="19" cy="-19" rx="8" ry="20" transform="rotate(45 19 -19)"/>
+    <ellipse cx="-19" cy="19" rx="8" ry="20" transform="rotate(45 -19 19)"/>
+    <ellipse cx="19" cy="19" rx="8" ry="20" transform="rotate(-45 19 19)"/>
+    <circle cx="0" cy="0" r="13" fill="#C89F4D"/>
   </g>
+  <text x="180" y="96" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" letter-spacing="8" fill="#222">RESIDENCIAL</text>
+  <text x="180" y="137" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="36" font-weight="400" letter-spacing="5" fill="#111">GIRASSOL</text>
 </svg>
