@@ -78,7 +78,7 @@
         <div class="card metric" onclick="showPendingDetails()" style="cursor:pointer"><span class="muted">Pendente</span><strong id="m-pendente">R$ 0,00</strong><div class="muted" style="font-size:12px;margin-top:6px">Toque para ver</div></div>
         <div class="card metric"><span class="muted">Atrasado</span><strong id="m-atrasado">R$ 0,00</strong></div>
         <div class="card metric"><span class="muted">Despesas</span><strong id="m-despesas">R$ 0,00</strong></div>
-        <div class="card metric wide"><span class="muted">Resultado do mês</span><strong id="m-resultado">R$ 0,00</strong></div>
+        <div class="card metric wide" onclick="showMonthlyStatusReport()" style="cursor:pointer"><span class="muted">Resultado do mês</span><strong id="m-resultado">R$ 0,00</strong><div class="muted" style="font-size:12px;margin-top:6px">Toque para ver o relatório</div></div>
       </div>
 
       <div class="section-title">Empreendimentos</div>
@@ -156,6 +156,11 @@
 <dialog id="unit-dialog">
   <div class="modal-head"><div><strong id="unit-title">Apartamento</strong><div class="muted" id="unit-sub"></div></div><button class="close" onclick="closeUnit()">×</button></div>
   <div class="modal-body" id="unit-body"></div>
+</dialog>
+
+<dialog id="monthly-status-dialog">
+  <div class="modal-head"><div><strong>Relatório de recebimentos</strong><div class="muted" id="monthly-status-sub"></div></div><button class="close" onclick="document.getElementById('monthly-status-dialog').close()">×</button></div>
+  <div class="modal-body" id="monthly-status-body"></div>
 </dialog>
 
 <dialog id="pending-dialog">
@@ -284,6 +289,67 @@ function renderMetrics(){
   document.getElementById('m-pendente').textContent=money(pend);
   document.getElementById('m-atrasado').textContent=money(over);
 }
+function showMonthlyStatusReport(){
+  const now=new Date();
+  const monthLabel=now.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const monthPayments=thisMonthPayments();
+  const groups=[
+    {name:'Villa Park',items:[]},
+    {name:'Residencial Girassol',items:[]},
+    {name:'Locações Avulsas',items:[]}
+  ];
+  let paidTotal=0,pendingTotal=0,paidCount=0,pendingCount=0;
+
+  Object.entries(db.units).forEach(([key,u])=>{
+    if(u.status!=='ocupado' || Number(u.rent)<=0)return;
+    const source=`${u.property} • ${u.unit}`;
+    const pays=monthPayments.filter(p=>p.source===source);
+    const paid=pays.length>0;
+    const paidValue=pays.reduce((sum,p)=>sum+Number(p.value||0),0);
+    const item={kind:'unit',key,title:`APTO ${u.unit}`,tenant:u.tenant||'Sem inquilino informado',rent:Number(u.rent),paid,paidValue};
+    if(u.property==='Villa Park')groups[0].items.push(item);
+    else if(u.property==='Residencial Girassol')groups[1].items.push(item);
+    if(paid){paidTotal+=paidValue;paidCount++;}else{pendingTotal+=Number(u.rent);pendingCount++;}
+  });
+
+  (db.avulsos||[]).forEach((a,index)=>{
+    if(a.status!=='ocupado' || Number(a.rent)<=0)return;
+    const source=a.name||a.type;
+    const pays=monthPayments.filter(p=>p.source===source);
+    const paid=pays.length>0;
+    const paidValue=pays.reduce((sum,p)=>sum+Number(p.value||0),0);
+    groups[2].items.push({kind:'avulso',index,title:source,tenant:a.tenant||'Sem inquilino informado',rent:Number(a.rent),paid,paidValue});
+    if(paid){paidTotal+=paidValue;paidCount++;}else{pendingTotal+=Number(a.rent);pendingCount++;}
+  });
+
+  const row=item=>{
+    const action=item.kind==='unit'?`onclick="document.getElementById('monthly-status-dialog').close();openUnit('${item.key}')"`:`onclick="document.getElementById('monthly-status-dialog').close();editAvulso(${item.index})"`;
+    return `<div class="unit-row" ${action} style="cursor:pointer;align-items:flex-start">
+      <div style="min-width:0">
+        <strong>${esc(item.title)}</strong>
+        <div class="muted">${esc(item.tenant)}</div>
+        <div class="muted">Aluguel: ${money(item.rent)}</div>
+      </div>
+      <div style="text-align:right;min-width:105px">
+        <div style="font-weight:800;color:${item.paid?'#15803d':'#ca8a04'}">${item.paid?'✓ Pago':'— Pendente'}</div>
+        <div class="muted" style="margin-top:4px">${item.paid?money(item.paidValue):money(item.rent)}</div>
+      </div>
+    </div>`;
+  };
+
+  const sections=groups.filter(g=>g.items.length).map(g=>`<div class="section-title">${esc(g.name)}</div><div class="list">${g.items.sort((a,b)=>a.title.localeCompare(b.title,'pt-BR',{numeric:true})).map(row).join('')}</div>`).join('');
+  document.getElementById('monthly-status-sub').textContent=monthLabel.charAt(0).toUpperCase()+monthLabel.slice(1);
+  document.getElementById('monthly-status-body').innerHTML=`
+    <div class="card" style="margin-bottom:14px">
+      <div class="row-between"><span style="color:#15803d;font-weight:700">✓ Pagos (${paidCount})</span><strong style="color:#15803d">${money(paidTotal)}</strong></div>
+      <div class="row-between" style="margin-top:10px"><span style="color:#ca8a04;font-weight:700">— Pendentes (${pendingCount})</span><strong style="color:#ca8a04">${money(pendingTotal)}</strong></div>
+      <hr style="border:0;border-top:1px solid #eee;margin:14px 0">
+      <div class="row-between"><span>Total previsto</span><strong>${money(paidTotal+pendingTotal)}</strong></div>
+    </div>
+    ${sections||'<div class="empty">Nenhum imóvel ocupado com aluguel cadastrado.</div>'}`;
+  document.getElementById('monthly-status-dialog').showModal();
+}
+
 function getPendingItems(){
   const day=new Date().getDate();
   const monthPayments=thisMonthPayments();
