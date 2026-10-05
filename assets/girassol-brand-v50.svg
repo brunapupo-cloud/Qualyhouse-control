@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 210" role="img" aria-label="Residencial Girassol">
+  <rect width="420" height="210" fill="#fff"/>
+  <g transform="translate(210 58)">
+    <g fill="#E3BE69">
+      <ellipse cx="0" cy="-31" rx="9" ry="22"/>
+      <ellipse cx="0" cy="31" rx="9" ry="22"/>
+      <ellipse cx="-31" cy="0" rx="22" ry="9"/>
+      <ellipse cx="31" cy="0" rx="22" ry="9"/>
+      <ellipse cx="-22" cy="-22" rx="9" ry="22" transform="rotate(-45 -22 -22)"/>
+      <ellipse cx="22" cy="-22" rx="9" ry="22" transform="rotate(45 22 -22)"/>
+      <ellipse cx="-22" cy="22" rx="9" ry="22" transform="rotate(45 -22 22)"/>
+      <ellipse cx="22" cy="22" rx="9" ry="22" transform="rotate(-45 22 22)"/>
+    </g>
+    <circle cx="0" cy="0" r="15" fill="#C89F4D"/>
+  </g>
+  <text x="210" y="117" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="14" letter-spacing="9" fill="#222">RESIDENCIAL</text>
+  <text x="210" y="160" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="39" font-weight="400" letter-spacing="7" fill="#111">GIRASSOL</text>
+  <line x1="55" y1="181" x2="365" y2="181" stroke="#333" stroke-width="1.5"/>
+</svg>
