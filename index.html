@@ -75,7 +75,7 @@
     <section id="screen-home" class="screen active">
       <div class="grid">
         <div class="card metric"><span class="muted">Recebido no mês</span><strong id="m-recebido">R$ 0,00</strong></div>
-        <div class="card metric"><span class="muted">Pendente</span><strong id="m-pendente">R$ 0,00</strong></div>
+        <div class="card metric" onclick="showPendingDetails()" style="cursor:pointer"><span class="muted">Pendente</span><strong id="m-pendente">R$ 0,00</strong><div class="muted" style="font-size:12px;margin-top:6px">Toque para ver</div></div>
         <div class="card metric"><span class="muted">Atrasado</span><strong id="m-atrasado">R$ 0,00</strong></div>
         <div class="card metric"><span class="muted">Despesas</span><strong id="m-despesas">R$ 0,00</strong></div>
         <div class="card metric wide"><span class="muted">Resultado do mês</span><strong id="m-resultado">R$ 0,00</strong></div>
@@ -156,6 +156,11 @@
 <dialog id="unit-dialog">
   <div class="modal-head"><div><strong id="unit-title">Apartamento</strong><div class="muted" id="unit-sub"></div></div><button class="close" onclick="closeUnit()">×</button></div>
   <div class="modal-body" id="unit-body"></div>
+</dialog>
+
+<dialog id="pending-dialog">
+  <div class="modal-head"><div><strong>Recebimentos pendentes</strong><div class="muted">Vencidos ou que vencem hoje e ainda não foram pagos</div></div><button class="close" onclick="document.getElementById('pending-dialog').close()">×</button></div>
+  <div class="modal-body" id="pending-body"></div>
 </dialog>
 
 <dialog id="payment-dialog">
@@ -279,6 +284,40 @@ function renderMetrics(){
   document.getElementById('m-pendente').textContent=money(pend);
   document.getElementById('m-atrasado').textContent=money(over);
 }
+function getPendingItems(){
+  const day=new Date().getDate();
+  const monthPayments=thisMonthPayments();
+  const items=[];
+  Object.entries(db.units).forEach(([key,u])=>{
+    if(u.status!=='ocupado' || Number(u.rent)<=0)return;
+    const due=Number(u.dueDay);
+    if(!due || day<due)return;
+    const source=`${u.property} • ${u.unit}`;
+    const has=monthPayments.some(p=>p.source===source);
+    if(!has)items.push({kind:'unit',key,property:u.property,unit:u.unit,tenant:u.tenant||'',due,rent:Number(u.rent),overdue:day>due});
+  });
+  (db.avulsos||[]).forEach((a,index)=>{
+    if(a.status!=='ocupado' || Number(a.rent)<=0)return;
+    const due=Number(a.dueDay);
+    if(!due || day<due)return;
+    const source=a.name||a.type;
+    const has=monthPayments.some(p=>p.source===source);
+    if(!has)items.push({kind:'avulso',index,name:source,tenant:a.tenant||'',due,rent:Number(a.rent),overdue:day>due});
+  });
+  return items.sort((a,b)=>a.due-b.due);
+}
+function showPendingDetails(){
+  const items=getPendingItems();
+  const body=document.getElementById('pending-body');
+  body.innerHTML=items.length?'<div class="list">'+items.map(item=>{
+    const title=item.kind==='unit'?`${esc(item.property)} • APTO ${esc(item.unit)}`:esc(item.name);
+    const tenant=item.tenant?esc(item.tenant):'Sem inquilino informado';
+    const action=item.kind==='unit'?`onclick="document.getElementById('pending-dialog').close();openUnit('${item.key}')"`:`onclick="document.getElementById('pending-dialog').close();editAvulso(${item.index})"`;
+    return `<div class="unit-row" ${action} style="cursor:pointer"><div><strong>${title}</strong><div class="muted">${tenant} • vence dia ${item.due}</div></div><div style="text-align:right"><strong>${money(item.rent)}</strong><div class="muted">${item.overdue?'Atrasado':'Vence hoje'}</div></div></div>`;
+  }).join('')+'</div>':'<div class="empty">Nenhum recebimento pendente no momento.</div>';
+  document.getElementById('pending-dialog').showModal();
+}
+
 function legendHTML(){
   return `<div class="legend">
     <span class="pill"><span class="dot livre"></span>Livre</span>
