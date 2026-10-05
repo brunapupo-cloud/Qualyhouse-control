@@ -129,6 +129,80 @@
       #screen-properties .property-name{font-size:15px}
       #screen-properties .property .muted{font-size:11.5px}
     }
+    /* Ajuste individual das marcas no mobile */
+    @media(max-width:520px){
+      #screen-home .logo-villa,
+      #screen-properties .logo-villa{
+        width:46px;height:46px;min-width:46px;flex-basis:46px;
+        background:#F4F7FA;
+      }
+      #screen-home .logo-villa img,
+      #screen-properties .logo-villa img{
+        width:72%;height:72%;
+      }
+
+      #screen-home .logo-girassol,
+      #screen-properties .logo-girassol{
+        width:48px;height:48px;min-width:48px;flex-basis:48px;
+        background:#FFF9EC;
+      }
+      #screen-home .logo-girassol img,
+      #screen-properties .logo-girassol img{
+        width:84%;height:84%;
+      }
+
+      #screen-home .logo-oca,
+      #screen-properties .logo-oca{
+        width:78px;height:46px;min-width:78px;flex-basis:78px;
+        border-radius:12px;background:#FFFFFF;
+        padding:4px 5px;
+      }
+      #screen-home .logo-oca img,
+      #screen-properties .logo-oca img{
+        width:100%;height:auto;max-height:34px;
+      }
+
+      #screen-home .logo-avulsos,
+      #screen-properties .logo-avulsos{
+        width:44px;height:44px;min-width:44px;flex-basis:44px;
+        background:#F4F7FA;
+      }
+      #screen-home .logo-avulsos img,
+      #screen-properties .logo-avulsos img{
+        width:68%;height:68%;
+      }
+
+      #screen-home .property-copy,
+      #screen-properties .property-copy{
+        padding-right:2px;
+      }
+      #screen-home .property-name,
+      #screen-properties .property-name{
+        font-size:15px;
+        line-height:1.17;
+      }
+      #screen-home .property .muted,
+      #screen-properties .property .muted{
+        font-size:11.5px;
+        line-height:1.28;
+        margin-top:3px;
+      }
+    }
+
+    @media(max-width:360px){
+      #screen-home .logo-villa,
+      #screen-properties .logo-villa{width:42px;height:42px;min-width:42px;flex-basis:42px}
+      #screen-home .logo-girassol,
+      #screen-properties .logo-girassol{width:44px;height:44px;min-width:44px;flex-basis:44px}
+      #screen-home .logo-oca,
+      #screen-properties .logo-oca{width:68px;height:42px;min-width:68px;flex-basis:68px;padding:4px}
+      #screen-home .logo-avulsos,
+      #screen-properties .logo-avulsos{width:40px;height:40px;min-width:40px;flex-basis:40px}
+      #screen-home .property-name,
+      #screen-properties .property-name{font-size:14px}
+      #screen-home .property .muted,
+      #screen-properties .property .muted{font-size:10.8px}
+    }
     .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:12px;background:#EEF2F7}
     .dot{width:10px;height:10px;border-radius:50%}
     .dot.livre{background:var(--livre)}.dot.ocupado{background:var(--ocupado)}.dot.reserva{background:var(--reserva)}.dot.manutencao{background:var(--manutencao)}
@@ -213,7 +287,7 @@
       <div class="list property-list">
         <div class="card property" onclick="openProperty('villa')">
           <div class="property-row">
-            <div class="brand-icon"><img src="assets/villa-leaf.svg" alt="Villa Park Residencial"></div>
+            <div class="brand-icon logo-villa"><img src="assets/villa-leaf.svg" alt="Villa Park Residencial"></div>
             <div class="property-copy">
               <div class="title property-name">Villa Park Residencial</div>
               <div class="muted">16 apartamentos • térreo + superior</div>
@@ -224,7 +298,7 @@
 
         <div class="card property" onclick="openProperty('girassol')">
           <div class="property-row">
-            <div class="brand-icon"><img src="assets/residencial-girassol.svg" alt="Residencial Girassol"></div>
+            <div class="brand-icon logo-girassol"><img src="assets/residencial-girassol.svg" alt="Residencial Girassol"></div>
             <div class="property-copy">
               <div class="title property-name">Residencial Girassol</div>
               <div class="muted">5 apartamentos • térreo</div>
@@ -235,7 +309,7 @@
 
         <div class="card property" onclick="openProperty('oca')">
           <div class="property-row">
-            <div class="brand-icon oca-logo-box"><img src="assets/oca-wordmark.svg" alt="Oca Urbana"></div>
+            <div class="brand-icon oca-logo-box logo-oca"><img src="assets/oca-wordmark.svg" alt="Oca Urbana"></div>
             <div class="property-copy">
               <div class="title property-name">Oca Urbana</div>
               <div class="muted">Empreendimento futuro</div>
@@ -246,7 +320,7 @@
 
         <div class="card property" onclick="openProperty('avulsos')">
           <div class="property-row">
-            <div class="brand-icon"><img src="assets/locacoes-avulsas.svg" alt="Locações Avulsas"></div>
+            <div class="brand-icon logo-avulsos"><img src="assets/locacoes-avulsas.svg" alt="Locações Avulsas"></div>
             <div class="property-copy">
               <div class="title property-name">Locações Avulsas</div>
               <div class="muted">Casa, chácara, apartamento e outros</div>
@@ -271,10 +345,10 @@
     <section id="screen-properties" class="screen">
       <div class="section-title">Imóveis</div>
       <div class="list">
-        <div class="card property" onclick="openProperty('villa')"><div class="property-row"><div class="brand-icon"><img src="assets/villa-leaf.svg" alt="Villa Park Residencial"></div><div class="property-copy"><div class="title property-name">Villa Park <span class="descriptor">Residencial</span></div><div class="muted">Apartamentos 01–16</div></div><span class="property-arrow">›</span></div></div>
-        <div class="card property" onclick="openProperty('girassol')"><div class="property-row"><div class="brand-icon"><img src="assets/residencial-girassol.svg" alt="Residencial Girassol"></div><div class="property-copy"><div class="title property-name">Residencial Girassol</div><div class="muted">Apartamentos 01–05</div></div><span class="property-arrow">›</span></div></div>
-        <div class="card property" onclick="openProperty('oca')"><div class="property-row"><div class="brand-icon oca-logo-box"><img src="assets/oca-wordmark.svg" alt="Oca Urbana"></div><div class="property-copy"><div class="title property-name">Oca Urbana</div><div class="muted">Preparado para cadastro futuro</div></div><span class="property-arrow">›</span></div></div>
-        <div class="card property" onclick="openProperty('avulsos')"><div class="property-row"><div class="brand-icon"><img src="assets/locacoes-avulsas.svg" alt="Locações Avulsas"></div><div class="property-copy"><div class="title property-name">Locações Avulsas</div><div class="muted" id="av-count">0 imóveis cadastrados</div></div><span class="property-arrow">›</span></div></div>
+        <div class="card property" onclick="openProperty('villa')"><div class="property-row"><div class="brand-icon logo-villa"><img src="assets/villa-leaf.svg" alt="Villa Park Residencial"></div><div class="property-copy"><div class="title property-name">Villa Park <span class="descriptor">Residencial</span></div><div class="muted">Apartamentos 01–16</div></div><span class="property-arrow">›</span></div></div>
+        <div class="card property" onclick="openProperty('girassol')"><div class="property-row"><div class="brand-icon logo-girassol"><img src="assets/residencial-girassol.svg" alt="Residencial Girassol"></div><div class="property-copy"><div class="title property-name">Residencial Girassol</div><div class="muted">Apartamentos 01–05</div></div><span class="property-arrow">›</span></div></div>
+        <div class="card property" onclick="openProperty('oca')"><div class="property-row"><div class="brand-icon oca-logo-box logo-oca"><img src="assets/oca-wordmark.svg" alt="Oca Urbana"></div><div class="property-copy"><div class="title property-name">Oca Urbana</div><div class="muted">Preparado para cadastro futuro</div></div><span class="property-arrow">›</span></div></div>
+        <div class="card property" onclick="openProperty('avulsos')"><div class="property-row"><div class="brand-icon logo-avulsos"><img src="assets/locacoes-avulsas.svg" alt="Locações Avulsas"></div><div class="property-copy"><div class="title property-name">Locações Avulsas</div><div class="muted" id="av-count">0 imóveis cadastrados</div></div><span class="property-arrow">›</span></div></div>
       </div>
     </section>
 
@@ -569,7 +643,7 @@ function openProperty(which){
   const el=document.getElementById('property-content');
   if(which==='villa'){
     el.innerHTML=`
-      <div class="row-between" style="margin-top:14px"><div class="property-row"><div class="brand-icon"><img src="assets/villa-leaf.svg" alt="Villa Park Residencial"></div><div><h2 style="margin:0">Villa Park Residencial</h2><div class="muted">Mapa de apartamentos</div></div></div></div>
+      <div class="row-between" style="margin-top:14px"><div class="property-row"><div class="brand-icon logo-villa"><img src="assets/villa-leaf.svg" alt="Villa Park Residencial"></div><div><h2 style="margin:0">Villa Park Residencial</h2><div class="muted">Mapa de apartamentos</div></div></div></div>
       ${legendHTML()}
       <button class="btn secondary" style="width:100%;margin:4px 0 12px" onclick="renderVillaParking()">🚗 Vagas de Garagem</button>
       <div class="tabs"><button id="tab-ground" class="btn" onclick="setFloor('ground')">Térreo</button><button id="tab-upper" class="btn secondary" onclick="setFloor('upper')">Superior</button></div>
@@ -587,7 +661,7 @@ function openProperty(which){
       rows+=`<div class="unit-row" onclick="openUnit('girassol-${id}')"><div><strong>APTO ${id}${u.tenant&&u.tenant.trim()?' • '+esc(u.tenant):''}</strong><div class="muted">UC energia: ${esc(u.energyUC||'não informada')}</div></div><span class="status-badge ${u.status}">${statusLabel(u.status)}</span></div>`;
     }
     el.innerHTML=`
-      <div class="property-row" style="margin-top:14px"><div class="brand-icon"><img src="assets/residencial-girassol.svg" alt="Residencial Girassol"></div><div><h2 style="margin:0">Residencial Girassol</h2><div class="muted">5 apartamentos térreos</div></div></div>
+      <div class="property-row" style="margin-top:14px"><div class="brand-icon logo-girassol"><img src="assets/residencial-girassol.svg" alt="Residencial Girassol"></div><div><h2 style="margin:0">Residencial Girassol</h2><div class="muted">5 apartamentos térreos</div></div></div>
       ${legendHTML()}
       <div class="card" style="margin:12px 0">
         <div class="field"><label>💧 Hidrômetro geral</label><div class="row"><input id="gir-water" value="${esc(db.properties.girassol.waterHydrometer||'')}" placeholder="Digite o número"><button class="btn secondary" onclick="copyVal('gir-water')">Copiar</button></div></div>
@@ -1188,7 +1262,7 @@ function importData(ev){
   const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Backup importado com sucesso.')}catch(e){alert('Arquivo inválido.')}};r.readAsText(f)
 }
 
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=46',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=47',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 refreshAll();
 </script>
 </body>
