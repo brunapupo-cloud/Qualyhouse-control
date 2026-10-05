@@ -1,4 +1,4 @@
-const CACHE='qualyhouse-alpha-v43';
+const CACHE='qualyhouse-alpha-v44';
 const ASSETS=['./','index.html','manifest.webmanifest','cloud.js','auth-ui.js','assets/villa-park-terreo.jpeg','assets/villa-park-superior.jpeg','assets/villa-leaf.svg','assets/oca-wordmark.svg'];
 
 self.addEventListener('install',e=>{
