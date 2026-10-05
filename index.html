@@ -54,6 +54,29 @@
     .property .muted{margin-top:4px;color:#718096;font-size:13px;line-height:1.35}
     .property-name{font-weight:780;color:#0B1736}
     .property-name .descriptor{font-weight:600;color:#66758A}
+    /* Logos completas dos empreendimentos — desktop e tablet */
+    .logo-villa,.logo-girassol,.logo-oca{
+      width:104px!important;
+      height:58px!important;
+      min-width:104px!important;
+      flex-basis:104px!important;
+      background:#FFFFFF!important;
+      padding:4px 6px;
+    }
+    .logo-villa img,.logo-girassol img,.logo-oca img{
+      width:100%!important;
+      height:100%!important;
+      object-fit:contain!important;
+      max-height:none!important;
+    }
+    .logo-avulsos{
+      width:52px!important;
+      height:52px!important;
+      min-width:52px!important;
+      flex-basis:52px!important;
+    }
+    .logo-avulsos img{width:70%!important;height:70%!important}
+
     .oca-heading{display:inline-block;width:min(230px,65vw);vertical-align:middle}
     .oca-heading img{display:block;width:100%;height:auto}
     .screen h2{color:#0B1736;letter-spacing:-.025em}
@@ -78,7 +101,7 @@
     .home-section-head .section-title{margin:0}
     .home-section-head .section-note{font-size:11px;color:#8A96A6}
     #screen-home .property-list{gap:12px}
-    #screen-home .property{border-radius:20px;padding:15px 16px;box-shadow:0 10px 26px rgba(20,38,68,.055)}
+    #screen-home .property{border-radius:20px;padding:16px 18px;box-shadow:0 10px 26px rgba(20,38,68,.055)}
     #screen-home .property::before{width:3px;opacity:.9}
     #screen-home .brand-icon{width:48px;height:48px;min-width:48px;flex:0 0 48px;border-radius:14px;background:#F3F6FA}
     #screen-home .brand-icon img{width:78%;height:78%}
@@ -114,7 +137,7 @@
     @media(max-width:360px){
       #screen-home .property{padding:11px 10px 11px 13px}
       #screen-home .property-row{gap:9px}
-      #screen-home .brand-icon{width:40px;height:40px;min-width:40px;flex-basis:40px}
+      #screen-home .brand-icon{width:40px!important;height:40px!important;min-width:40px!important;flex-basis:40px!important}
       #screen-home .brand-icon.oca-logo-box{width:58px;min-width:58px;flex-basis:58px}
       #screen-home .property-name{font-size:14px}
       #screen-home .property .muted{font-size:11px}
@@ -133,14 +156,14 @@
     @media(max-width:520px){
       #screen-home .logo-villa,
       #screen-properties .logo-villa{
-        width:84px;height:50px;min-width:84px;flex-basis:84px;background:#FFFFFF;
+        width:84px!important;height:50px!important;min-width:84px!important;flex-basis:84px!important;background:#FFFFFF!important;
       }
       #screen-home .logo-villa img,
       #screen-properties .logo-villa img{width:96%;height:96%}
 
       #screen-home .logo-girassol,
       #screen-properties .logo-girassol{
-        width:84px;height:50px;min-width:84px;flex-basis:84px;background:#FFFFFF;
+        width:84px!important;height:50px!important;min-width:84px!important;flex-basis:84px!important;background:#FFFFFF!important;
       }
       #screen-home .logo-girassol img,
       #screen-properties .logo-girassol img{width:96%;height:96%}
@@ -154,7 +177,7 @@
 
       #screen-home .logo-avulsos,
       #screen-properties .logo-avulsos{
-        width:48px;height:48px;min-width:48px;flex-basis:48px;background:#F4F7FA;
+        width:48px!important;height:48px!important;min-width:48px!important;flex-basis:48px!important;background:#F4F7FA!important;
       }
       #screen-home .logo-avulsos img,
       #screen-properties .logo-avulsos img{width:68%;height:68%}
@@ -178,13 +201,13 @@
 
     @media(max-width:360px){
       #screen-home .logo-villa,
-      #screen-properties .logo-villa{width:72px;height:44px;min-width:72px;flex-basis:72px}
+      #screen-properties .logo-villa{width:72px!important;height:44px!important;min-width:72px!important;flex-basis:72px!important}
       #screen-home .logo-girassol,
-      #screen-properties .logo-girassol{width:72px;height:44px;min-width:72px;flex-basis:72px}
+      #screen-properties .logo-girassol{width:72px!important;height:44px!important;min-width:72px!important;flex-basis:72px!important}
       #screen-home .logo-oca,
-      #screen-properties .logo-oca{width:72px;height:44px;min-width:72px;flex-basis:72px;padding:3px}
+      #screen-properties .logo-oca{width:72px!important;height:44px!important;min-width:72px!important;flex-basis:72px!important;padding:3px}
       #screen-home .logo-avulsos,
-      #screen-properties .logo-avulsos{width:40px;height:40px;min-width:40px;flex-basis:40px}
+      #screen-properties .logo-avulsos{width:40px!important;height:40px!important;min-width:40px!important;flex-basis:40px!important}
       #screen-home .property-name,
       #screen-properties .property-name{font-size:14px}
       #screen-home .property .muted,
@@ -1249,7 +1272,7 @@ function importData(ev){
   const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Backup importado com sucesso.')}catch(e){alert('Arquivo inválido.')}};r.readAsText(f)
 }
 
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=48',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=49',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 refreshAll();
 </script>
 </body>
