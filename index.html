@@ -867,16 +867,22 @@ function toast(msg){if(/salv|atualiz/i.test(msg)){const b=document.activeElement
 
 function renderAvulsos(){
   const el=document.getElementById('property-content');
+  const now=new Date(),year=now.getFullYear(),month=now.getMonth();
+  let monthlyRevenue=0,annualRevenue=0,monthlyExpenses=0,annualExpenses=0;
+  (db.avulsos||[]).forEach(a=>(a.payments||[]).forEach(p=>{if(!p.date)return;const d=new Date(p.date+'T12:00:00');if(d.getFullYear()===year){annualRevenue+=Number(p.value||0);if(d.getMonth()===month)monthlyRevenue+=Number(p.value||0);}}));
+  (db.expenses||[]).filter(e=>e.property==='Locações Avulsas').forEach(e=>{if(!e.date)return;const d=new Date(e.date+'T12:00:00');if(d.getFullYear()===year){annualExpenses+=Number(e.value||0);if(d.getMonth()===month)monthlyExpenses+=Number(e.value||0);}});
+  const avulsoFinance=`<div class="section-title">Desempenho financeiro</div><div class="card"><div class="row-between"><span class="muted">Faturamento do mês</span><strong>${money(monthlyRevenue)}</strong></div><div class="row-between" style="margin-top:10px"><span class="muted">Despesas do mês</span><strong>${money(monthlyExpenses)}</strong></div><div class="row-between" style="margin-top:10px"><span>Resultado líquido do mês</span><strong>${money(monthlyRevenue-monthlyExpenses)}</strong></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><div class="row-between"><span class="muted">Faturamento anual</span><strong>${money(annualRevenue)}</strong></div><div class="row-between" style="margin-top:10px"><span class="muted">Despesas anuais</span><strong>${money(annualExpenses)}</strong></div><div class="row-between" style="margin-top:10px"><span>Resultado líquido anual</span><strong>${money(annualRevenue-annualExpenses)}</strong></div></div>`;
   const rows=db.avulsos.map((a,i)=>`<div class="unit-row" onclick="editAvulso(${i})"><div><strong>${esc(a.name||a.type)}</strong><div class="muted">${esc(a.type)} • ${money(a.rent)} • vence dia ${esc(a.dueDay||'-')}</div></div><span class="status-badge ${a.status}">${statusLabel(a.status)}</span></div>`).join('');
   el.innerHTML=`
     <div class="row-between" style="margin-top:14px"><div><h2 style="margin:0">🏠 Locações Avulsas</h2><div class="muted">Cadastre imóveis fora dos residenciais</div></div><button class="btn" onclick="newAvulso()">+ Novo</button></div>
     ${legendHTML()}
+    ${avulsoFinance}
     <div class="list">${rows||'<div class="empty">Nenhum imóvel avulso cadastrado.</div>'}</div>`;
 }
 function newAvulso(){
   const name=prompt('Identificação do imóvel (ex.: Casa Centro):'); if(name===null)return;
   const type=prompt('Tipo (Casa, Chácara, Apartamento, Sala, Kitnet ou Outro):','Casa')||'Outro';
-  db.avulsos.push({id:Date.now(),name:name.trim(),type:type.trim(),rent:'',dueDay:'',status:'livre',tenant:'',phone:'',notes:'',payments:[]});
+  db.avulsos.push({id:Date.now(),name:name.trim(),type:type.trim(),rent:'',dueDay:'',entryDate:'',status:'livre',tenant:'',phone:'',notes:'',payments:[]});
   save();renderAvulsos();editAvulso(db.avulsos.length-1);
 }
 function editAvulso(i){
@@ -892,6 +898,7 @@ function editAvulso(i){
       <div class="field"><label>Status</label><select id="a-status"><option value="livre" ${a.status==='livre'?'selected':''}>Livre</option><option value="ocupado" ${a.status==='ocupado'?'selected':''}>Ocupado</option><option value="reserva" ${a.status==='reserva'?'selected':''}>Reserva</option><option value="manutencao" ${a.status==='manutencao'?'selected':''}>Manutenção</option></select></div>
       <div class="field"><label>Valor do aluguel</label><input id="a-rent" value="${esc(a.rent)}"></div>
       <div class="field"><label>Dia do vencimento</label><input id="a-due" value="${esc(a.dueDay)}"></div>
+      <div class="field"><label>Data de entrada da locação</label><input id="a-entry" type="date" value="${esc(a.entryDate||'')}"></div>
       <div class="field"><label>Morador/locatário</label><input id="a-tenant" value="${esc(a.tenant)}"></div>
       <div class="field"><label>Telefone</label><input id="a-phone" value="${esc(a.phone)}"></div>
       <div class="field"><label>Observações</label><textarea id="a-notes">${esc(a.notes)}</textarea></div>
@@ -918,7 +925,7 @@ async function saveAvulsoPayment(i){
 }
 
 function saveAvulso(i){
-  const a=db.avulsos[i]; a.type=document.getElementById('a-type').value;a.name=document.getElementById('a-name').value;a.status=document.getElementById('a-status').value;a.rent=document.getElementById('a-rent').value.replace(',','.');a.dueDay=document.getElementById('a-due').value;a.tenant=document.getElementById('a-tenant').value;a.phone=document.getElementById('a-phone').value;a.notes=document.getElementById('a-notes').value;save();document.getElementById('unit-dialog').close();renderAvulsos()
+  const a=db.avulsos[i]; a.type=document.getElementById('a-type').value;a.name=document.getElementById('a-name').value;a.status=document.getElementById('a-status').value;a.rent=document.getElementById('a-rent').value.replace(',','.');a.dueDay=document.getElementById('a-due').value;a.entryDate=document.getElementById('a-entry').value;a.tenant=document.getElementById('a-tenant').value;a.phone=document.getElementById('a-phone').value;a.notes=document.getElementById('a-notes').value;save();document.getElementById('unit-dialog').close();renderAvulsos()
 }
 
 function exportData(){
