@@ -936,7 +936,7 @@ function importData(ev){
   const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Backup importado com sucesso.')}catch(e){alert('Arquivo inválido.')}};r.readAsText(f)
 }
 
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=31',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=38',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 refreshAll();
 </script>
 </body>
