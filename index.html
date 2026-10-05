@@ -12,6 +12,7 @@
   <style>
     :root{
       --bg:#f5f6f8;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--accent:#111827;
+      --interactive-bg:#f3f7fb;--interactive-border:#c9d8e8;--interactive-text:#1f3b57;
       --livre:#22c55e;--ocupado:#3b82f6;--reserva:#f59e0b;--manutencao:#ef4444;
     }
     *{box-sizing:border-box}
@@ -25,10 +26,19 @@
     .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(17,24,39,.05)}
     .card h3,.card h4{margin:0 0 8px}.muted{color:var(--muted);font-size:13px}
     .metric strong{display:block;font-size:22px;margin-top:4px}
+    .metric[onclick],.property,.unit-row[onclick],.payment[onclick]{background:var(--interactive-bg);border-color:var(--interactive-border);transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
+    .metric[onclick]{position:relative;padding-right:38px}
+    .metric[onclick]::after{content:'›';position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:24px;font-weight:800;color:var(--interactive-text);opacity:.72}
+    .metric[onclick] .muted,.property .muted{color:#60758a}
+    .metric[onclick] strong,.property .title{color:var(--interactive-text)}
     .wide{grid-column:1/-1}
     .btn{border:0;border-radius:12px;padding:12px 14px;background:var(--accent);color:#fff;font-weight:700}
     .btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}
     .btn.soft{background:#eef2f7;color:var(--text)}
+    @media (hover:hover) and (pointer:fine){
+      .metric[onclick]:hover,.property:hover,.unit-row[onclick]:hover,.payment[onclick]:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(17,24,39,.08)}
+    }
+    .metric[onclick]:active,.property:active,.unit-row[onclick]:active,.payment[onclick]:active{transform:scale(.99)}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .row-between{display:flex;justify-content:space-between;align-items:center;gap:10px}
     .property{cursor:pointer}
