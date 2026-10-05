@@ -80,17 +80,55 @@
     #screen-home .property-list{gap:12px}
     #screen-home .property{border-radius:20px;padding:15px 16px;box-shadow:0 10px 26px rgba(20,38,68,.055)}
     #screen-home .property::before{width:3px;opacity:.9}
-    #screen-home .brand-icon{width:46px;height:46px;flex-basis:46px;border-radius:14px;background:#F3F6FA}
-    #screen-home .brand-icon.oca{width:78px;flex-basis:78px}
-    #screen-home .property-name{font-size:16px}
-    #screen-home .property-arrow{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#EEF2F7;font-size:18px;opacity:1}
+    #screen-home .brand-icon{width:48px;height:48px;min-width:48px;flex:0 0 48px;border-radius:14px;background:#F3F6FA}
+    #screen-home .brand-icon img{width:78%;height:78%}
+    #screen-home .brand-icon.oca-logo-box{width:76px;min-width:76px;flex-basis:76px;background:#fff}
+    #screen-home .brand-icon.oca-logo-box img{width:90%;height:auto;max-height:34px}
+    #screen-home .property-name{font-size:16px;line-height:1.2}
+    #screen-home .property .muted{font-size:12.5px;line-height:1.35}
+    #screen-home .property-arrow{width:30px;height:30px;min-width:30px;border-radius:50%;display:grid;place-items:center;background:#EEF2F7;font-size:18px;opacity:1}
     .shortcut-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     .shortcut-btn{min-height:58px;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px;justify-content:flex-start;text-align:left;font-weight:750;border:1px solid #D6DFE9;background:#fff;color:#0B1736;box-shadow:0 6px 18px rgba(20,38,68,.04)}
     .shortcut-btn .sicon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:#EEF2F7;color:#4E6485;flex:0 0 32px}
     .shortcut-btn.primary{background:#4E6485;color:#fff;border-color:#4E6485}
     .shortcut-btn.primary .sicon{background:rgba(255,255,255,.14);color:#fff}
     .shortcut-btn.warning .sicon{background:#FFF4D8;color:#B58414}
-    @media(max-width:420px){.home-intro .headline{font-size:21px}.home-metrics .metric strong{font-size:21px}.shortcut-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:520px){
+      #screen-home{padding-left:12px;padding-right:12px}
+      .home-section-head{margin:19px 2px 9px}
+      .home-section-head .section-note{font-size:10.5px}
+      #screen-home .property-list{gap:9px}
+      #screen-home .property{padding:12px 12px 12px 14px;border-radius:17px}
+      #screen-home .property-row{gap:11px}
+      #screen-home .brand-icon{width:44px;height:44px;min-width:44px;flex-basis:44px;border-radius:12px}
+      #screen-home .brand-icon img{width:76%;height:76%}
+      #screen-home .brand-icon.oca-logo-box{width:66px;min-width:66px;flex-basis:66px}
+      #screen-home .brand-icon.oca-logo-box img{width:91%;height:auto;max-height:29px}
+      #screen-home .property-name{font-size:15px;line-height:1.18}
+      #screen-home .property .muted{font-size:11.5px;line-height:1.3;margin-top:3px}
+      #screen-home .property-arrow{width:28px;height:28px;min-width:28px;font-size:17px}
+      .home-intro .headline{font-size:21px}
+      .home-metrics .metric strong{font-size:21px}
+      .shortcut-grid{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:360px){
+      #screen-home .property{padding:11px 10px 11px 13px}
+      #screen-home .property-row{gap:9px}
+      #screen-home .brand-icon{width:40px;height:40px;min-width:40px;flex-basis:40px}
+      #screen-home .brand-icon.oca-logo-box{width:58px;min-width:58px;flex-basis:58px}
+      #screen-home .property-name{font-size:14px}
+      #screen-home .property .muted{font-size:11px}
+      #screen-home .property-arrow{width:26px;height:26px;min-width:26px}
+    }
+    @media(max-width:520px){
+      #screen-properties .property{padding:12px 13px;border-radius:17px}
+      #screen-properties .property-row{gap:10px}
+      #screen-properties .brand-icon{width:44px;height:44px;min-width:44px;flex-basis:44px;border-radius:12px}
+      #screen-properties .brand-icon.oca-logo-box{width:66px;min-width:66px;flex-basis:66px}
+      #screen-properties .brand-icon.oca-logo-box img{max-height:29px}
+      #screen-properties .property-name{font-size:15px}
+      #screen-properties .property .muted{font-size:11.5px}
+    }
     .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:12px;background:#EEF2F7}
     .dot{width:10px;height:10px;border-radius:50%}
     .dot.livre{background:var(--livre)}.dot.ocupado{background:var(--ocupado)}.dot.reserva{background:var(--reserva)}.dot.manutencao{background:var(--manutencao)}
@@ -1150,7 +1188,7 @@ function importData(ev){
   const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Backup importado com sucesso.')}catch(e){alert('Arquivo inválido.')}};r.readAsText(f)
 }
 
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=45',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=46',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 refreshAll();
 </script>
 </body>
