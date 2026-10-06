@@ -238,6 +238,15 @@
     .modal-head{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;z-index:2}
     .modal-body{padding:16px;background:#F7F9FC}
     .close{border:0;background:#DCE3EC;color:#0B1736;border-radius:50%;width:34px;height:34px}
+    .finance-folder-group{margin-bottom:14px;padding:14px 16px}
+    .finance-folder-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:9px}
+    .finance-unit-folder{border-top:1px solid #E5EAF0;padding:10px 0}
+    .finance-unit-folder summary{cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;list-style:none;font-weight:700}
+    .finance-unit-folder summary::-webkit-details-marker{display:none}
+    .finance-unit-folder summary::before{content:'▸';color:#4E6485;font-size:14px;margin-right:2px}
+    .finance-unit-folder[open] summary::before{content:'▾'}
+    .finance-unit-folder .folder-title{flex:1}
+    .finance-folder-body{padding:10px 0 0 18px}
     .payment{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}
     .empty{padding:18px;text-align:center;color:var(--muted);background:#fff;border:1px dashed #d1d5db;border-radius:14px}
     .hide{display:none!important}
@@ -1005,53 +1014,64 @@ function renderFinance(){
   const target=document.getElementById('finance-list');
   if(!target)return;
 
-  // A organização é apenas visual: todos os lançamentos permanecem nas unidades.
-  const villaFolders=Array.from({length:16},(_,i)=>({number:i+1,payments:[]}));
-  const other=[];
-  Object.values(db.units).forEach(u=>{
-    (u.payments||[]).forEach(p=>{
-      if(u.property==='Villa Park' && Number(u.unit)>=1 && Number(u.unit)<=16){
-        villaFolders[Number(u.unit)-1].payments.push(p);
-      }else{
-        other.push({...p,kind:'payment',source:`${u.property} • APTO ${u.unit}`});
-      }
-    });
-  });
-  (db.avulsos||[]).forEach(a=>(a.payments||[]).forEach(p=>other.push({...p,kind:'payment',source:a.name||a.type})));
-  (db.expenses||[]).forEach(e=>other.push({...e,kind:'expense',source:e.property||'Despesa'}));
   const newest=(a,b)=>(b.date||'').localeCompare(a.date||'');
   const paymentHTML=p=>`<div class="payment" style="margin-top:9px">
     <div class="row-between"><strong>${esc(p.competence||'Competência não informada')}</strong><strong>${money(p.value)}</strong></div>
     <div class="muted">Pago em ${esc(p.date||'Data não informada')} • ${esc(p.method||'Forma não informada')}</div>
     ${p.note?`<div class="muted">${esc(p.note)}</div>`:''}
   </div>`;
-  const foldersHTML=`<div class="card" style="margin-bottom:14px">
-    <strong>📁 Villa Park</strong><div class="muted" style="margin:5px 0 12px">Toque no apartamento para consultar seus pagamentos.</div>
-    ${villaFolders.map(folder=>{
-      const rows=folder.payments.sort(newest);
-      const total=rows.reduce((sum,p)=>sum+Number(p.value||0),0);
-      return `<details style="border-top:1px solid #e5e7eb;padding:11px 0">
-        <summary style="cursor:pointer;list-style-position:inside;font-weight:700">📁 APTO ${String(folder.number).padStart(2,'0')} <span class="muted" style="font-weight:400">• ${rows.length} ${rows.length===1?'pagamento':'pagamentos'}</span></summary>
-        <div style="padding:10px 0 0 8px">
-          ${rows.length?`<div class="muted">Total registrado: ${money(total)}</div>${rows.map(paymentHTML).join('')}`:'<div class="muted">Nenhum pagamento registrado neste apartamento.</div>'}
-        </div>
-      </details>`;
-    }).join('')}
-  </div>`;
-  other.sort(newest);
-  const otherHTML=other.length?`<div class="section-title">Outros lançamentos</div>`+other.map(item=>{
-    if(item.kind==='expense')return `<div class="payment">
-      <div class="row-between"><div><strong>${esc(item.description||'Despesa')}</strong><div class="muted">${esc(item.source)} • ${esc(item.category||'Outros')}</div></div><strong>− ${money(item.value)}</strong></div>
-      <div class="muted">${esc(item.date||'')}${item.notes?` • ${esc(item.notes)}`:''}</div>
-    </div>`;
-    return `<div class="payment"><div class="row-between"><strong>${esc(item.source)}</strong><strong>${money(item.value)}</strong></div>
-      <div class="muted">${esc(item.competence||'')} • ${esc(item.date||'')} • ${esc(item.method||'')}</div></div>`;
-  }).join(''):'';
-  target.innerHTML=foldersHTML+otherHTML;
+
+  const unitFolderHTML=(label,payments)=>{
+    const rows=(payments||[]).slice().sort(newest);
+    const total=rows.reduce((sum,p)=>sum+Number(p.value||0),0);
+    return `<details class="finance-unit-folder">
+      <summary><span class="folder-title">📁 ${esc(label)}</span><span class="muted">${rows.length} ${rows.length===1?'pagamento':'pagamentos'}</span></summary>
+      <div class="finance-folder-body">
+        ${rows.length?`<div class="muted">Total registrado: ${money(total)}</div>${rows.map(paymentHTML).join('')}`:'<div class="muted">Nenhum pagamento registrado.</div>'}
+      </div>
+    </details>`;
+  };
+
+  const villaItems=Array.from({length:16},(_,idx)=>{
+    const id=String(idx+1).padStart(2,'0');
+    const u=db.units['villa-'+id];
+    return unitFolderHTML('APTO '+id,u?.payments||[]);
+  }).join('');
+
+  const girassolItems=Array.from({length:5},(_,idx)=>{
+    const id=String(idx+1).padStart(2,'0');
+    const u=db.units['girassol-'+id];
+    return unitFolderHTML('APTO '+id,u?.payments||[]);
+  }).join('');
+
+  const avulsoItems=(db.avulsos||[]).map(a=>unitFolderHTML(a.name||a.type||'Locação avulsa',a.payments||[])).join('');
+
+  target.innerHTML=`
+    <div class="finance-folder-group card">
+      <div class="finance-folder-head">
+        <div><strong>📁 Villa Park Residencial</strong><div class="muted">16 apartamentos</div></div>
+      </div>
+      ${villaItems}
+    </div>
+
+    <div class="finance-folder-group card">
+      <div class="finance-folder-head">
+        <div><strong>📁 Residencial Girassol</strong><div class="muted">5 apartamentos</div></div>
+      </div>
+      ${girassolItems}
+    </div>
+
+    <div class="finance-folder-group card">
+      <div class="finance-folder-head">
+        <div><strong>📁 Locações Avulsas</strong><div class="muted">Pagamentos separados por imóvel</div></div>
+      </div>
+      ${avulsoItems||'<div class="muted" style="padding:10px 0">Nenhuma locação avulsa cadastrada.</div>'}
+    </div>
+  `;
+
   renderMonthlyClose();
   renderAnnualClose();
 }
-
 function renderMonthlyClose(){
 
   const target=document.getElementById('monthly-close');
