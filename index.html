@@ -308,9 +308,9 @@
           <small>Toque para ver os imóveis</small>
         </div>
         <div class="card metric">
-          <div class="metric-top"><span class="metric-label">Atrasado</span><span class="metric-icon">!</span></div>
-          <strong id="m-atrasado">R$ 0,00</strong>
-          <small>Recebimentos vencidos</small>
+          <div class="metric-top"><span class="metric-label">Previsão do mês</span><span class="metric-icon">R$</span></div>
+          <strong id="m-previsto">R$ 0,00</strong>
+          <small>Total previsto para receber no mês</small>
         </div>
         <div class="card metric">
           <div class="metric-top"><span class="metric-label">Despesas</span><span class="metric-icon">−</span></div>
@@ -544,31 +544,31 @@ function renderMetrics(){
   document.getElementById('m-despesas').textContent=money(expenses);
   document.getElementById('m-resultado').textContent=money(received-expenses);
   // Pendente: somente aluguéis que vencem hoje ou já venceram e ainda não foram pagos.
-  // Atrasado: somente aluguéis com vencimento anterior a hoje e ainda não pagos.
-  let pend=0,over=0; const day=new Date().getDate();
+  // Previsão do mês: soma cheia dos aluguéis cadastrados para todos os imóveis atualmente ocupados.
+  let pend=0,previsto=0; const day=new Date().getDate();
   const monthPayments=thisMonthPayments();
   Object.values(db.units).forEach(u=>{
     if(u.status==='ocupado' && Number(u.rent)>0){
+      previsto+=Number(u.rent);
       const due=Number(u.dueDay);
       const has=monthPayments.some(p=>p.source===`${u.property} • ${u.unit}`);
       if(!has && due && day>=due){
         pend+=Number(u.rent);
-        if(day>due) over+=Number(u.rent);
       }
     }
   });
   db.avulsos.forEach(a=>{
     if(a.status==='ocupado' && Number(a.rent)>0){
+      previsto+=Number(a.rent);
       const due=Number(a.dueDay);
       const has=monthPayments.some(p=>p.source===(a.name||a.type));
       if(!has && due && day>=due){
         pend+=Number(a.rent);
-        if(day>due) over+=Number(a.rent);
       }
     }
   });
   document.getElementById('m-pendente').textContent=money(pend);
-  document.getElementById('m-atrasado').textContent=money(over);
+  document.getElementById('m-previsto').textContent=money(previsto);
 }
 function showMonthlyStatusReport(){
   const now=new Date();
