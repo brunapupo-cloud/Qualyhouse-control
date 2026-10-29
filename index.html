@@ -530,12 +530,22 @@ function showScreen(name){
   window.scrollTo(0,0);
 }
 function refreshAll(){renderMetrics();renderFinance()}
+function paymentCompetenceDate(p){
+  // O mês contábil segue a competência, sem modificar a data efetiva do recebimento.
+  const c=String(p.competence||'').trim();
+  let m=c.match(/^(0?[1-9]|1[0-2])\s*\/\s*(\d{4})$/);
+  if(m)return new Date(Number(m[2]),Number(m[1])-1,1,12);
+  m=c.match(/^(\d{4})-(0[1-9]|1[0-2])(?:-\d{2})?$/);
+  if(m)return new Date(Number(m[1]),Number(m[2])-1,1,12);
+  // Compatibilidade com pagamentos antigos sem competência preenchida.
+  return p.date?new Date(p.date+'T12:00:00'):new Date(NaN);
+}
 function thisMonthPayments(){
   const now=new Date(); const y=now.getFullYear(),m=now.getMonth();
   let all=[];
   Object.entries(db.units).forEach(([k,u])=>(u.payments||[]).forEach(p=>all.push({...p,source:`${u.property} • ${u.unit}`})));
   db.avulsos.forEach(a=>(a.payments||[]).forEach(p=>all.push({...p,source:a.name||a.type})));
-  return all.filter(p=>{const d=new Date(p.date+'T12:00:00');return d.getFullYear()===y&&d.getMonth()===m});
+  return all.filter(p=>{const d=paymentCompetenceDate(p);return d.getFullYear()===y&&d.getMonth()===m});
 }
 function renderMetrics(){
   const received=thisMonthPayments().reduce((a,p)=>a+Number(p.value||0),0);
@@ -745,8 +755,8 @@ function getPropertyFinance(propertyName){
     if(u.property!==propertyName)return;
 
     (u.payments||[]).forEach(p=>{
-      if(!p.date)return;
-      const d=new Date(p.date+'T12:00:00');
+      const d=paymentCompetenceDate(p);
+      if(Number.isNaN(d.getTime()))return;
 
       if(d.getFullYear()===year){
         annualRevenue+=Number(p.value||0);
@@ -1091,8 +1101,8 @@ function renderMonthlyClose(){
 
   Object.values(db.units).forEach(u=>{
     (u.payments||[]).forEach(p=>{
-      if(!p.date)return;
-      const d=new Date(p.date+'T12:00:00');
+      const d=paymentCompetenceDate(p);
+      if(Number.isNaN(d.getTime()))return;
 
       if(d.getFullYear()===year){
         data[d.getMonth()].revenue+=Number(p.value||0);
@@ -1102,8 +1112,8 @@ function renderMonthlyClose(){
 
   (db.avulsos||[]).forEach(a=>{
     (a.payments||[]).forEach(p=>{
-      if(!p.date)return;
-      const d=new Date(p.date+'T12:00:00');
+      const d=paymentCompetenceDate(p);
+      if(Number.isNaN(d.getTime()))return;
 
       if(d.getFullYear()===year){
         data[d.getMonth()].revenue+=Number(p.value||0);
@@ -1163,9 +1173,8 @@ function renderMonthlyClose(){
 
   Object.values(db.units).forEach(u=>{
     (u.payments||[]).forEach(p=>{
-      if(!p.date)return;
-
-      const d=new Date(p.date+'T12:00:00');
+      const d=paymentCompetenceDate(p);
+      if(Number.isNaN(d.getTime()))return;
 
       if(d.getFullYear()===year){
         annualRevenue+=Number(p.value||0);
@@ -1175,9 +1184,8 @@ function renderMonthlyClose(){
 
   (db.avulsos||[]).forEach(a=>{
     (a.payments||[]).forEach(p=>{
-      if(!p.date)return;
-
-      const d=new Date(p.date+'T12:00:00');
+      const d=paymentCompetenceDate(p);
+      if(Number.isNaN(d.getTime()))return;
 
       if(d.getFullYear()===year){
         annualRevenue+=Number(p.value||0);
@@ -1233,7 +1241,7 @@ function renderAvulsos(){
   const el=document.getElementById('property-content');
   const now=new Date(),year=now.getFullYear(),month=now.getMonth();
   let monthlyRevenue=0,annualRevenue=0,monthlyExpenses=0,annualExpenses=0;
-  (db.avulsos||[]).forEach(a=>(a.payments||[]).forEach(p=>{if(!p.date)return;const d=new Date(p.date+'T12:00:00');if(d.getFullYear()===year){annualRevenue+=Number(p.value||0);if(d.getMonth()===month)monthlyRevenue+=Number(p.value||0);}}));
+  (db.avulsos||[]).forEach(a=>(a.payments||[]).forEach(p=>{const d=paymentCompetenceDate(p);if(Number.isNaN(d.getTime()))return;if(d.getFullYear()===year){annualRevenue+=Number(p.value||0);if(d.getMonth()===month)monthlyRevenue+=Number(p.value||0);}}));
   (db.expenses||[]).filter(e=>e.property==='Locações Avulsas').forEach(e=>{if(!e.date)return;const d=new Date(e.date+'T12:00:00');if(d.getFullYear()===year){annualExpenses+=Number(e.value||0);if(d.getMonth()===month)monthlyExpenses+=Number(e.value||0);}});
   const avulsoFinance=`<div class="section-title">Desempenho financeiro</div><div class="card"><div class="row-between"><span class="muted">Faturamento do mês</span><strong>${money(monthlyRevenue)}</strong></div><div class="row-between" style="margin-top:10px"><span class="muted">Despesas do mês</span><strong>${money(monthlyExpenses)}</strong></div><div class="row-between" style="margin-top:10px"><span>Resultado líquido do mês</span><strong>${money(monthlyRevenue-monthlyExpenses)}</strong></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><div class="row-between"><span class="muted">Faturamento anual</span><strong>${money(annualRevenue)}</strong></div><div class="row-between" style="margin-top:10px"><span class="muted">Despesas anuais</span><strong>${money(annualExpenses)}</strong></div><div class="row-between" style="margin-top:10px"><span>Resultado líquido anual</span><strong>${money(annualRevenue-annualExpenses)}</strong></div></div>`;
   const rows=db.avulsos.map((a,i)=>`<div class="unit-row" onclick="editAvulso(${i})"><div><strong>${esc(a.name||a.type)}</strong><div class="muted">${esc(a.type)} • ${money(a.rent)} • vence dia ${esc(a.dueDay||'-')}</div></div><span class="status-badge ${a.status}">${statusLabel(a.status)}</span></div>`).join('');
@@ -1252,7 +1260,7 @@ function newAvulso(){
 function avulsoFinanceSummary(a){
   const now=new Date(),year=now.getFullYear(),month=now.getMonth();
   let monthlyRevenue=0,annualRevenue=0,monthlyExpenses=0,annualExpenses=0;
-  (a.payments||[]).forEach(p=>{if(!p.date)return;const d=new Date(p.date+'T12:00:00');if(d.getFullYear()===year){annualRevenue+=Number(p.value||0);if(d.getMonth()===month)monthlyRevenue+=Number(p.value||0);}});
+  (a.payments||[]).forEach(p=>{const d=paymentCompetenceDate(p);if(Number.isNaN(d.getTime()))return;if(d.getFullYear()===year){annualRevenue+=Number(p.value||0);if(d.getMonth()===month)monthlyRevenue+=Number(p.value||0);}});
   (db.expenses||[]).filter(e=>e._avulsoId===a._id).forEach(e=>{if(!e.date)return;const d=new Date(e.date+'T12:00:00');if(d.getFullYear()===year){annualExpenses+=Number(e.value||0);if(d.getMonth()===month)monthlyExpenses+=Number(e.value||0);}});
   return {monthlyRevenue,annualRevenue,monthlyExpenses,annualExpenses,monthlyNet:monthlyRevenue-monthlyExpenses,annualNet:annualRevenue-annualExpenses};
 }
