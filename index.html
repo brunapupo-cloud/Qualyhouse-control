@@ -869,6 +869,48 @@ function setFloor(f){
   target.innerHTML=`<div class="plan-wrap"><img src="${img}" alt="Planta ${f==='ground'?'térrea':'superior'} do Villa Park">${buttons}</div>`;
 }
 
+
+function leaseHistoryHTML(o){
+ const list=o.previousTenants||[];
+ return '<div class="section-title">Histórico de inquilinos</div><div class="card">'+
+ (list.length?list.slice().reverse().map(t=>{
+ const pays=(o.payments||[]).filter(p=>p.leaseId===t.leaseId);
+ return '<details style="padding:10px 0;border-bottom:1px solid #ddd"><summary style="cursor:pointer"><strong>'+esc(t.tenant)+'</strong><div class="muted">'+esc(t.entryDate||'Entrada não informada')+' até '+esc(t.exitDate||'Saída não informada')+'</div></summary>'+
+ '<div class="muted" style="margin-top:10px">Telefone: '+esc(t.phone||'—')+' • E-mail: '+esc(t.email||'—')+'</div>'+
+ '<div class="muted">Aluguel: '+money(t.rent)+' • Vencimento: '+esc(t.dueDay||'—')+'</div>'+
+ '<div class="muted">Contrato: '+esc(t.contractStatus||'—')+' • Observações: '+esc(t.notes||'—')+'</div>'+
+ '<strong>Pagamentos ('+pays.length+'): '+money(pays.reduce((n,p)=>n+Number(p.value||0),0))+'</strong>'+
+ pays.map(p=>'<div class="payment"><strong>'+esc(p.competence||'')+' — '+money(p.value)+'</strong><div class="muted">Pago em '+esc(p.date||'')+' • '+esc(p.method||'')+'</div></div>').join('')+'</details>';
+ }).join(''):'<div class="muted">Nenhum inquilino anterior registrado.</div>')+'</div>';
+}
+function archiveTenant(o,date){
+ if(!String(o.tenant||'').trim())return false;
+ o.previousTenants=o.previousTenants||[];
+ const id=o.currentLeaseId||('lease-'+Date.now()+'-'+Math.random().toString(36).slice(2,8));
+ (o.payments||[]).forEach(p=>{if(!p.leaseId)p.leaseId=id});
+ o.previousTenants.push({leaseId:id,tenant:o.tenant,phone:o.phone||'',email:o.email||'',rent:o.rent||'',dueDay:o.dueDay||'',entryDate:o.entryDate||'',exitDate:date||o.exitDate||'',contractStatus:o.contractStatus||'',notes:o.notes||''});
+ o.currentLeaseId=null;
+ o.tenant='';o.phone='';o.email='';o.entryDate='';o.exitDate='';o.contractStatus='';o.notes='';o.status='livre';
+ return true;
+}
+function startNewUnitTenant(key){
+ const date=prompt('Data de saída do inquilino anterior (AAAA-MM-DD). Deixe vazio caso não saiba:','');
+ if(date===null)return;
+ if(date&&!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('Data inválida. Use AAAA-MM-DD.');return}
+ currentUnitKey=key;saveUnit();
+ if(!archiveTenant(db.units[key],date)){alert('Não há inquilino atual para arquivar.');return}
+ save();document.getElementById('unit-dialog').close();openUnit(key);
+ toast('Inquilino anterior arquivado. Preencha os dados do novo morador.');
+}
+function startNewAvulsoTenant(i){
+ const date=prompt('Data de saída do inquilino anterior (AAAA-MM-DD). Deixe vazio caso não saiba:','');
+ if(date===null)return;
+ if(date&&!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('Data inválida. Use AAAA-MM-DD.');return}
+ saveAvulso(i,true);
+ if(!archiveTenant(db.avulsos[i],date)){alert('Não há inquilino atual para arquivar.');return}
+ save();document.getElementById('unit-dialog').close();editAvulso(i);
+ toast('Inquilino anterior arquivado. Preencha os dados do novo morador.');
+}
 function openUnit(key){
   currentUnitKey=key;
   const u=db.units[key];
@@ -902,6 +944,8 @@ function unitForm(u,key){
       <div class="field"><label>Situação do contrato</label><input id="u-contract" value="${esc(u.contractStatus)}" placeholder="Ex.: ativo"></div>
       ${isGir?`<div class="field"><label>⚡ UC de energia individual</label><input id="u-energy" value="${esc(u.energyUC||'')}" placeholder="Digite a UC"></div>`:''}
     </div>
+    <div class="card"><button class="btn secondary" style="width:100%" onclick="startNewUnitTenant('${key}')">Trocar inquilino / Registrar saída</button></div>
+    ${leaseHistoryHTML(u)}
     ${parkingHTML}
     <div class="section-title">Financeiro</div>
     <div class="card">
@@ -968,7 +1012,8 @@ function openPayment(key){
 function savePayment(){
   const u=db.units[currentUnitKey];
   u.payments=u.payments||[];
-  u.payments.push({competence:document.getElementById('p-comp').value,date:document.getElementById('p-date').value,value:document.getElementById('p-value').value.replace(',','.'),method:document.getElementById('p-method').value,note:document.getElementById('p-note').value.trim()});
+  u.currentLeaseId=u.currentLeaseId||('lease-'+Date.now()+'-'+Math.random().toString(36).slice(2,8));
+  u.payments.push({leaseId:u.currentLeaseId,competence:document.getElementById('p-comp').value,date:document.getElementById('p-date').value,value:document.getElementById('p-value').value.replace(',','.'),method:document.getElementById('p-method').value,note:document.getElementById('p-note').value.trim()});
   save();
   document.getElementById('payment-dialog').close();
   openUnit(currentUnitKey);
@@ -1282,8 +1327,10 @@ function editAvulso(i){
       <div class="field"><label>Morador/locatário</label><input id="a-tenant" value="${esc(a.tenant)}"></div>
       <div class="field"><label>Telefone</label><input id="a-phone" value="${esc(a.phone)}"></div>
       <div class="field"><label>Observações</label><textarea id="a-notes">${esc(a.notes)}</textarea></div>
+      <button class="btn secondary" style="width:100%;margin-bottom:10px" onclick="startNewAvulsoTenant(${i})">Trocar inquilino / Registrar saída</button>
       <button class="btn" style="width:100%" onclick="saveAvulso(${i})">Salvar alterações</button>
     </div>
+    ${leaseHistoryHTML(a)}
     <div class="section-title">Resumo financeiro • ${esc(a.name||a.type)}</div>
     <div class="card">
       <div class="row-between"><span class="muted">Faturamento do mês</span><strong>${money(f.monthlyRevenue)}</strong></div>
@@ -1310,12 +1357,13 @@ function openAvulsoPayment(i){
 async function saveAvulsoPayment(i){
   const a=db.avulsos[i];if(!a)return;
   a.payments=a.payments||[];
-  a.payments.push({competence:document.getElementById('ap-comp').value,date:document.getElementById('ap-date').value,value:document.getElementById('ap-value').value.replace(',','.'),method:document.getElementById('ap-method').value,note:document.getElementById('ap-note').value.trim()});
+  a.currentLeaseId=a.currentLeaseId||('lease-'+Date.now()+'-'+Math.random().toString(36).slice(2,8));
+  a.payments.push({leaseId:a.currentLeaseId,competence:document.getElementById('ap-comp').value,date:document.getElementById('ap-date').value,value:document.getElementById('ap-value').value.replace(',','.'),method:document.getElementById('ap-method').value,note:document.getElementById('ap-note').value.trim()});
   save();document.getElementById('payment-dialog').close();editAvulso(i);
 }
 
-function saveAvulso(i){
-  const a=db.avulsos[i]; a.type=document.getElementById('a-type').value;a.name=document.getElementById('a-name').value;a.status=document.getElementById('a-status').value;a.rent=document.getElementById('a-rent').value.replace(',','.');a.dueDay=document.getElementById('a-due').value;a.entryDate=document.getElementById('a-entry').value;a.tenant=document.getElementById('a-tenant').value;a.phone=document.getElementById('a-phone').value;a.notes=document.getElementById('a-notes').value;save();document.getElementById('unit-dialog').close();renderAvulsos()
+function saveAvulso(i,keepOpen=false){
+  const a=db.avulsos[i]; a.type=document.getElementById('a-type').value;a.name=document.getElementById('a-name').value;a.status=document.getElementById('a-status').value;a.rent=document.getElementById('a-rent').value.replace(',','.');a.dueDay=document.getElementById('a-due').value;a.entryDate=document.getElementById('a-entry').value;a.tenant=document.getElementById('a-tenant').value;a.phone=document.getElementById('a-phone').value;a.notes=document.getElementById('a-notes').value;save();if(!keepOpen){document.getElementById('unit-dialog').close();renderAvulsos()}
 }
 
 function exportData(){
