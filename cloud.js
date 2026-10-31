@@ -3,7 +3,13 @@
 
   const SUPABASE_URL = 'https://rkjoojknzstuekvtwyvd.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_' + 'publishable_' + 'ox6yl9PKR7jt' + '-j-HMu3U1g_' + 'ssa6Siwt';
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  });
 
   let authUser = null;
   let propertyRowsByCode = {};
@@ -256,15 +262,26 @@
     // Dá tempo para o Supabase processar o hash do magic link e persistir a sessão.
     await wait(250);
 
-    const { data: sessionData, error: sessionError } = await sb.auth.getSession();
+    let { data: sessionData, error: sessionError } = await sb.auth.getSession();
     if (sessionError) console.error(sessionError);
 
-    if (!sessionData?.session?.user) {
-      showLogin('');
+    // If a saved session exists, use it immediately and refresh it when needed.
+    if (sessionData?.session?.user) {
+      await loadAndShowApp(sessionData.session.user);
       return;
     }
 
-    await loadAndShowApp(sessionData.session.user);
+    // A very short second check avoids briefly showing login while Safari finishes restoring local storage.
+    await wait(350);
+    ({ data: sessionData, error: sessionError } = await sb.auth.getSession());
+    if (sessionError) console.error(sessionError);
+
+    if (sessionData?.session?.user) {
+      await loadAndShowApp(sessionData.session.user);
+      return;
+    }
+
+    showLogin('');
   }
 
   async function loadCloudData() {
