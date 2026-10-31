@@ -282,7 +282,7 @@
 <body>
 <div class="app">
   <header>
-    <div class="brand">QUALYHOUSE CONTROL ALPHA</div>
+    <div class="brand">Qualyhouse Control</div>
     <div class="sub">Gestão simples de imóveis e recebimentos</div>
   </header>
 
@@ -1374,7 +1374,7 @@ function importData(ev){
   const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Backup importado com sucesso.')}catch(e){alert('Arquivo inválido.')}};r.readAsText(f)
 }
 
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=51',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=52',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}))}
 refreshAll();
 </script>
 </body>
