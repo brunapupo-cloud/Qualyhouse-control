@@ -45,17 +45,36 @@
       </div>
       <div id="qh-login-card" class="qh-auth-card hide">
         <div class="qh-auth-brand">QUALYHOUSE CONTROL</div>
-        <div class="muted">Acesso protegido sem senha</div>
+        <div class="muted">Acesso protegido</div>
         <div class="qh-auth-title">Entrar</div>
-        <div class="muted" style="margin-bottom:18px">Toque no botão abaixo e enviaremos um link de acesso para o seu e-mail. Depois do primeiro acesso, o iPhone mantém sua sessão automaticamente.</div>
+
+        <form id="qh-password-form">
+          <div class="field">
+            <label>E-mail</label>
+            <input id="qh-email-visible" type="email" value="brunapupo@hotmail.com" autocomplete="username" readonly>
+          </div>
+          <div class="field">
+            <label>Senha</label>
+            <input id="qh-password" type="password" autocomplete="current-password" placeholder="Digite sua senha">
+          </div>
+          <button id="qh-password-btn" class="btn" type="submit">Entrar com e-mail e senha</button>
+        </form>
+
+        <div style="display:flex;align-items:center;gap:10px;margin:18px 0;color:#9ca3af;font-size:12px">
+          <span style="height:1px;background:#e5e7eb;flex:1"></span>
+          <span>ou</span>
+          <span style="height:1px;background:#e5e7eb;flex:1"></span>
+        </div>
+
         <form id="qh-login-form">
           <input id="qh-email" type="hidden" value="brunapupo@hotmail.com">
-          <button id="qh-login-btn" class="btn" type="submit">Entrar sem senha</button>
-          <div id="qh-auth-msg" class="qh-auth-msg"></div>
+          <button id="qh-login-btn" class="btn secondary" type="submit">Receber link de acesso por e-mail</button>
         </form>
+        <div id="qh-auth-msg" class="qh-auth-msg"></div>
       </div>`;
     document.body.appendChild(auth);
     document.getElementById('qh-login-form').addEventListener('submit', signIn);
+    document.getElementById('qh-password-form').addEventListener('submit', signInWithPassword);
   }
 
   function configureSettings() {
@@ -100,6 +119,40 @@
     if (email) email.textContent = authUser?.email ? `Conta: ${authUser.email}` : '';
   }
 
+  async function signInWithPassword(event) {
+    event.preventDefault();
+    const email = document.getElementById('qh-email-visible').value.trim();
+    const password = document.getElementById('qh-password').value;
+    const btn = document.getElementById('qh-password-btn');
+
+    if (!password) {
+      setAuthMessage('Digite sua senha para entrar.', true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Entrando...';
+    setAuthMessage('');
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      console.error(error);
+      setAuthMessage('E-mail ou senha incorretos. Confira a senha e tente novamente.', true);
+      btn.disabled = false;
+      btn.textContent = 'Entrar com e-mail e senha';
+      return;
+    }
+
+    if (data?.user) {
+      setAuthMessage('Acesso confirmado. Carregando seus dados...');
+      await loadAndShowApp(data.user);
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Entrar com e-mail e senha';
+    }
+  }
+
   async function signIn(event) {
     event.preventDefault();
     const email = document.getElementById('qh-email').value.trim();
@@ -139,7 +192,7 @@
       return;
     }
 
-    setAuthMessage('Link enviado para brunapupo@hotmail.com. Abra o e-mail e toque no link para entrar.');
+    setAuthMessage('Link enviado. Abra o e-mail no aparelho em que deseja entrar e toque no link.');
     btn.disabled = true;
     btn.textContent = 'Link enviado';
     setTimeout(() => {
