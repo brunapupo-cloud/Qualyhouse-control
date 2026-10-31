@@ -118,15 +118,34 @@
 
     if (error) {
       console.error(error);
-      setAuthMessage('Não foi possível enviar o link de acesso. Tente novamente.', true);
-      btn.disabled = false;
-      btn.textContent = 'Entrar sem senha';
+      const rateLimited =
+        error.status === 429 ||
+        error.code === 'over_email_send_rate_limit' ||
+        /rate limit|after \d+ seconds|security purposes/i.test(error.message || '');
+
+      if (rateLimited) {
+        setAuthMessage('Um link já foi solicitado recentemente. Aguarde cerca de 1 minuto antes de tentar novamente e confira seu e-mail.', true);
+        btn.disabled = true;
+        btn.textContent = 'Aguarde 1 minuto';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Enviar link novamente';
+        }, 60000);
+      } else {
+        setAuthMessage('Não foi possível enviar o link de acesso. Tente novamente.', true);
+        btn.disabled = false;
+        btn.textContent = 'Entrar sem senha';
+      }
       return;
     }
 
     setAuthMessage('Link enviado para brunapupo@hotmail.com. Abra o e-mail e toque no link para entrar.');
-    btn.disabled = false;
-    btn.textContent = 'Enviar link novamente';
+    btn.disabled = true;
+    btn.textContent = 'Link enviado';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = 'Enviar link novamente';
+    }, 60000);
   }
 
   window.signOutQualyhouse = async function () {
