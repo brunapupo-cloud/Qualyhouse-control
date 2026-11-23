@@ -3,8 +3,101 @@
 
   const SUPABASE_URL = 'https://rkjoojknzstuekvtwyvd.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_' + 'publishable_' + 'ox6yl9PKR7jt' + '-j-HMu3U1g_' + 'ssa6Siwt';
+  const authStorage = (() => {
+    const DB_NAME = 'qualyhouse-auth';
+    const STORE_NAME = 'session-store';
+
+    function openDb() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function idbGet(key) {
+      const db = await openDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const req = tx.objectStore(STORE_NAME).get(key);
+        req.onsuccess = () => resolve(req.result ?? null);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function idbSet(key, value) {
+      const db = await openDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(value, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function idbRemove(key) {
+      const db = await openDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    return {
+      async getItem(key) {
+        try {
+          const value = await idbGet(key);
+          if (value != null) return value;
+        } catch (err) {
+          console.warn('IndexedDB indisponível; usando armazenamento local.', err);
+        }
+
+        try {
+          const legacy = localStorage.getItem(key);
+          if (legacy != null) {
+            try { await idbSet(key, legacy); } catch (_) {}
+          }
+          return legacy;
+        } catch (_) {
+          return null;
+        }
+      },
+
+      async setItem(key, value) {
+        let saved = false;
+        try {
+          await idbSet(key, value);
+          saved = true;
+        } catch (err) {
+          console.warn('Falha ao salvar sessão no IndexedDB.', err);
+        }
+
+        try {
+          localStorage.setItem(key, value);
+          saved = true;
+        } catch (_) {}
+
+        if (!saved) throw new Error('Não foi possível salvar a sessão neste aparelho.');
+      },
+
+      async removeItem(key) {
+        try { await idbRemove(key); } catch (_) {}
+        try { localStorage.removeItem(key); } catch (_) {}
+      }
+    };
+  })();
+
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
+      storage: authStorage,
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true
