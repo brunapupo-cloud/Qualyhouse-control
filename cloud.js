@@ -205,10 +205,70 @@
       <h3>Dados na nuvem</h3>
       <p class="muted">Seus dados são sincronizados com o Supabase e protegidos pelo seu login.</p>
       <div class="muted" id="qh-account-email" style="margin-bottom:14px"></div>
+
+      <div style="margin:16px 0;padding:14px;border:1px solid #e5e7eb;border-radius:14px">
+        <h4 style="margin:0 0 10px">Segurança da conta</h4>
+        <div class="field">
+          <label>Nova senha</label>
+          <input id="qh-settings-password" type="password" autocomplete="new-password" placeholder="Digite uma nova senha">
+        </div>
+        <div class="field">
+          <label>Confirmar nova senha</label>
+          <input id="qh-settings-password-confirm" type="password" autocomplete="new-password" placeholder="Repita a nova senha">
+        </div>
+        <button id="qh-change-password-btn" class="btn secondary" type="button">Alterar senha</button>
+        <div id="qh-change-password-msg" class="muted" style="margin-top:8px"></div>
+      </div>
+
       <div class="row">
         <button class="btn secondary" onclick="exportData()">Fazer backup</button>
         <button class="btn secondary" onclick="signOutQualyhouse()">Sair da conta</button>
       </div>`;
+
+    document.getElementById('qh-change-password-btn')?.addEventListener('click', changePasswordFromSettings);
+  }
+
+  async function changePasswordFromSettings() {
+    const p1 = document.getElementById('qh-settings-password')?.value || '';
+    const p2 = document.getElementById('qh-settings-password-confirm')?.value || '';
+    const btn = document.getElementById('qh-change-password-btn');
+    const msg = document.getElementById('qh-change-password-msg');
+
+    function show(message, isError=false) {
+      if (!msg) return;
+      msg.textContent = message || '';
+      msg.style.color = isError ? '#b91c1c' : '#6b7280';
+    }
+
+    if (p1.length < 8) {
+      show('Use uma senha com pelo menos 8 caracteres.', true);
+      return;
+    }
+    if (p1 !== p2) {
+      show('As duas senhas não são iguais.', true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+    show('');
+
+    const { error } = await sb.auth.updateUser({ password: p1 });
+
+    if (error) {
+      console.error(error);
+      show('Não foi possível alterar a senha nesta sessão. Tente novamente pelo celular onde o Qualyhouse já está aberto.', true);
+      btn.disabled = false;
+      btn.textContent = 'Alterar senha';
+      return;
+    }
+
+    document.getElementById('qh-settings-password').value = '';
+    document.getElementById('qh-settings-password-confirm').value = '';
+    show('Senha alterada com sucesso. Você já pode usar essa nova senha no iPad.');
+    btn.disabled = false;
+    btn.textContent = 'Senha alterada ✓';
+    setTimeout(()=>{ btn.textContent = 'Alterar senha'; }, 2500);
   }
 
   function setAuthMessage(message, isError = false) {
