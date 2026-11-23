@@ -158,6 +158,7 @@
             <input id="qh-password" type="password" autocomplete="current-password" placeholder="Digite sua senha">
           </div>
           <button id="qh-password-btn" class="btn" type="submit">Entrar com e-mail e senha</button>
+          <button id="qh-forgot-btn" class="btn secondary" type="button" style="margin-top:10px">Esqueci minha senha</button>
         </form>
 
         <div style="display:flex;align-items:center;gap:10px;margin:18px 0;color:#9ca3af;font-size:12px">
@@ -171,10 +172,30 @@
           <button id="qh-login-btn" class="btn secondary" type="submit">Receber link de acesso por e-mail</button>
         </form>
         <div id="qh-auth-msg" class="qh-auth-msg"></div>
+      </div>
+      <div id="qh-recovery-card" class="qh-auth-card hide">
+        <div class="qh-auth-brand">QUALYHOUSE CONTROL</div>
+        <div class="muted">Recuperação de acesso</div>
+        <div class="qh-auth-title">Criar nova senha</div>
+        <div class="muted" style="margin-bottom:18px">Digite uma nova senha para sua conta.</div>
+        <form id="qh-recovery-form">
+          <div class="field">
+            <label>Nova senha</label>
+            <input id="qh-new-password" type="password" autocomplete="new-password" placeholder="Digite a nova senha">
+          </div>
+          <div class="field">
+            <label>Confirmar nova senha</label>
+            <input id="qh-new-password-confirm" type="password" autocomplete="new-password" placeholder="Repita a nova senha">
+          </div>
+          <button id="qh-recovery-btn" class="btn" type="submit">Salvar nova senha</button>
+          <div id="qh-recovery-msg" class="qh-auth-msg"></div>
+        </form>
       </div>`;
     document.body.appendChild(auth);
     document.getElementById('qh-login-form').addEventListener('submit', signIn);
     document.getElementById('qh-password-form').addEventListener('submit', signInWithPassword);
+    document.getElementById('qh-forgot-btn').addEventListener('click', forgotPassword);
+    document.getElementById('qh-recovery-form').addEventListener('submit', saveNewPassword);
   }
 
   function configureSettings() {
@@ -217,6 +238,80 @@
     if (appEl) appEl.classList.remove('hide');
     const email = document.getElementById('qh-account-email');
     if (email) email.textContent = authUser?.email ? `Conta: ${authUser.email}` : '';
+  }
+
+  function showRecovery() {
+    if (appEl) appEl.classList.add('hide');
+    document.getElementById('qh-auth')?.classList.remove('hide');
+    document.getElementById('qh-loading-card')?.classList.add('hide');
+    document.getElementById('qh-login-card')?.classList.add('hide');
+    document.getElementById('qh-recovery-card')?.classList.remove('hide');
+  }
+
+  async function forgotPassword() {
+    const email = document.getElementById('qh-email-visible').value.trim();
+    const btn = document.getElementById('qh-forgot-btn');
+    btn.disabled = true;
+    btn.textContent = 'Enviando recuperação...';
+    setAuthMessage('');
+
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://brunapupo-cloud.github.io/Qualyhouse-control/'
+    });
+
+    if (error) {
+      console.error(error);
+      setAuthMessage('Não foi possível enviar o e-mail de recuperação agora. Tente novamente em alguns minutos.', true);
+      btn.disabled = false;
+      btn.textContent = 'Esqueci minha senha';
+      return;
+    }
+
+    setAuthMessage('E-mail de recuperação enviado. Abra o e-mail no iPad e toque no link para criar uma nova senha.');
+    btn.disabled = false;
+    btn.textContent = 'Esqueci minha senha';
+  }
+
+  async function saveNewPassword(event) {
+    event.preventDefault();
+    const p1 = document.getElementById('qh-new-password').value;
+    const p2 = document.getElementById('qh-new-password-confirm').value;
+    const msg = document.getElementById('qh-recovery-msg');
+    const btn = document.getElementById('qh-recovery-btn');
+
+    function setRecoveryMessage(message, isError=false) {
+      msg.textContent = message || '';
+      msg.className = 'qh-auth-msg' + (isError ? ' error' : '');
+    }
+
+    if (p1.length < 8) {
+      setRecoveryMessage('Use uma senha com pelo menos 8 caracteres.', true);
+      return;
+    }
+    if (p1 !== p2) {
+      setRecoveryMessage('As duas senhas não são iguais.', true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+    const { error } = await sb.auth.updateUser({ password: p1 });
+
+    if (error) {
+      console.error(error);
+      setRecoveryMessage('Não foi possível atualizar a senha. Abra novamente o link de recuperação enviado por e-mail.', true);
+      btn.disabled = false;
+      btn.textContent = 'Salvar nova senha';
+      return;
+    }
+
+    setRecoveryMessage('Senha atualizada com sucesso. Carregando o Qualyhouse...');
+    const { data } = await sb.auth.getSession();
+    if (data?.session?.user) {
+      setTimeout(()=>loadAndShowApp(data.session.user), 300);
+    } else {
+      setTimeout(()=>showLogin('Senha atualizada. Entre com sua nova senha.'), 600);
+    }
   }
 
   async function signInWithPassword(event) {
@@ -442,6 +537,12 @@
           showLogin('');
         }
       }, 500);
+      return;
+    }
+
+    if(event==='PASSWORD_RECOVERY'){
+      authInitializing = false;
+      showRecovery();
       return;
     }
 
