@@ -15,6 +15,7 @@
   let propertyRowsByCode = {};
   let cloudLoadInProgress = false;
   let cloudLoadedForUser = null;
+  let authInitializing = true;
 
   const appEl = document.querySelector('.app');
   if (appEl) appEl.classList.add('hide');
@@ -258,23 +259,37 @@
 
   async function initAuth() {
     showLoading();
+    authInitializing = true;
 
-    // Dá tempo para o Supabase processar o hash do magic link e persistir a sessão.
-    await wait(250);
+    // Dá tempo para o Safari/PWA restaurar o armazenamento local antes de decidir que não há sessão.
+    await wait(300);
 
     let { data: sessionData, error: sessionError } = await sb.auth.getSession();
     if (sessionError) console.error(sessionError);
 
-    // If a saved session exists, use it immediately and refresh it when needed.
     if (sessionData?.session?.user) {
+      try {
+        const { data: refreshed, error: refreshError } = await sb.auth.refreshSession();
+        if (!refreshError && refreshed?.session?.user) {
+          sessionData = refreshed;
+        } else if (refreshError) {
+          console.warn('Não foi possível renovar a sessão automaticamente.', refreshError);
+        }
+      } catch (err) {
+        console.warn('Falha temporária ao renovar sessão.', err);
+      }
+
+      authInitializing = false;
       await loadAndShowApp(sessionData.session.user);
       return;
     }
 
-    // A very short second check avoids briefly showing login while Safari finishes restoring local storage.
-    await wait(350);
+    // Segunda leitura para evitar falso logout durante a restauração do storage no iOS.
+    await wait(800);
     ({ data: sessionData, error: sessionError } = await sb.auth.getSession());
     if (sessionError) console.error(sessionError);
+
+    authInitializing = false;
 
     if (sessionData?.session?.user) {
       await loadAndShowApp(sessionData.session.user);
@@ -323,11 +338,21 @@
     if(event==='SIGNED_OUT'){
       authUser=null;
       cloudLoadedForUser=null;
-      showLogin('');
+
+      if (authInitializing) return;
+
+      setTimeout(async()=>{
+        const { data } = await sb.auth.getSession();
+        if (data?.session?.user) {
+          loadAndShowApp(data.session.user);
+        } else {
+          showLogin('');
+        }
+      }, 500);
       return;
     }
-    if(event==='SIGNED_IN' && session?.user){
-      // Run outside the auth callback to avoid racing with session persistence.
+
+    if((event==='SIGNED_IN' || event==='TOKEN_REFRESHED') && session?.user){
       setTimeout(()=>loadAndShowApp(session.user), 0);
     }
   });
