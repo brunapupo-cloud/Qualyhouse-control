@@ -255,9 +255,51 @@
     btn.textContent = 'Enviando recuperação...';
     setAuthMessage('');
 
-    const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://brunapupo-cloud.github.io/Qualyhouse-control/'
-    });
+    let recoveryError = null;
+
+    try {
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://brunapupo-cloud.github.io/Qualyhouse-control/'
+      });
+      recoveryError = error || null;
+    } catch (err) {
+      recoveryError = err;
+    }
+
+    // Safari/iPad: se a biblioteca falhar com "Load failed", tenta diretamente
+    // o endpoint oficial de recuperação do Supabase.
+    if (recoveryError && /load failed|fetch/i.test(recoveryError.message || '')) {
+      try {
+        const redirectTo = encodeURIComponent('https://brunapupo-cloud.github.io/Qualyhouse-control/');
+        const response = await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${redirectTo}`, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-store',
+          credentials: 'omit',
+          headers: {
+            'apikey': SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email })
+        });
+
+        if (response.ok) {
+          recoveryError = null;
+        } else {
+          let payload = {};
+          try { payload = await response.json(); } catch (_) {}
+          const directError = new Error(payload.msg || payload.message || payload.error_description || `HTTP ${response.status}`);
+          directError.status = response.status;
+          directError.code = payload.error_code || payload.code || null;
+          recoveryError = directError;
+        }
+      } catch (directErr) {
+        recoveryError = directErr;
+      }
+    }
+
+    const error = recoveryError;
 
     if (error) {
       console.error(error);
