@@ -261,15 +261,42 @@
 
     if (error) {
       console.error(error);
-      setAuthMessage('Não foi possível enviar o e-mail de recuperação agora. Tente novamente em alguns minutos.', true);
-      btn.disabled = false;
-      btn.textContent = 'Esqueci minha senha';
+
+      const rateLimited =
+        error.status === 429 ||
+        error.code === 'over_email_send_rate_limit' ||
+        /rate limit|after \d+ seconds|security purposes|email rate limit/i.test(error.message || '');
+
+      if (rateLimited) {
+        setAuthMessage('O Supabase bloqueou temporariamente novos e-mails por limite de envio. Aguarde pelo menos 1 minuto antes de tentar novamente.', true);
+        btn.disabled = true;
+        btn.textContent = 'Aguarde 1 minuto';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Esqueci minha senha';
+        }, 60000);
+      } else {
+        const safeDetail = (error.message || '').toLowerCase();
+        if (/redirect|url/.test(safeDetail)) {
+          setAuthMessage('O link de recuperação não pôde ser criado por causa da configuração de redirecionamento. Vou corrigir essa configuração.', true);
+        } else if (/smtp|email|mail/.test(safeDetail)) {
+          setAuthMessage('O serviço de e-mail do Supabase recusou o envio agora. Tente novamente em alguns minutos.', true);
+        } else {
+          setAuthMessage('Não foi possível enviar o e-mail de recuperação agora. Tente novamente em alguns minutos.', true);
+        }
+        btn.disabled = false;
+        btn.textContent = 'Esqueci minha senha';
+      }
       return;
     }
 
     setAuthMessage('E-mail de recuperação enviado. Abra o e-mail no iPad e toque no link para criar uma nova senha.');
-    btn.disabled = false;
-    btn.textContent = 'Esqueci minha senha';
+    btn.disabled = true;
+    btn.textContent = 'E-mail enviado';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = 'Esqueci minha senha';
+    }, 60000);
   }
 
   async function saveNewPassword(event) {
