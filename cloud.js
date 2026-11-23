@@ -282,7 +282,10 @@
         } else if (/smtp|email|mail/.test(safeDetail)) {
           setAuthMessage('O serviço de e-mail do Supabase recusou o envio agora. Tente novamente em alguns minutos.', true);
         } else {
-          setAuthMessage('Não foi possível enviar o e-mail de recuperação agora. Tente novamente em alguns minutos.', true);
+          const status = error.status ?? 'sem status';
+          const code = error.code ?? 'sem código';
+          const detail = (error.message || 'sem mensagem').slice(0, 180);
+          setAuthMessage(`Falha na recuperação. Status: ${status} | Código: ${code} | ${detail}`, true);
         }
         btn.disabled = false;
         btn.textContent = 'Esqueci minha senha';
