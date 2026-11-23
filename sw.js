@@ -1,5 +1,5 @@
-const CACHE='qualyhouse-alpha-v61';
-const ASSETS=['./','index.html','manifest.webmanifest','cloud.js','auth-ui.js','assets/villa-park-terreo.jpeg','assets/villa-park-superior.jpeg','assets/villa-leaf.svg','assets/oca-wordmark.svg','assets/residencial-girassol.svg','assets/locacoes-avulsas.svg','assets/villa-park-approved-v51.jpeg','assets/girassol-approved-v51.jpeg','assets/oca-urbana-approved-v51.jpeg'];
+const CACHE='qualyhouse-alpha-v62';
+const ASSETS=['./','index.html','manifest.webmanifest','cloud.js?v=62','auth-ui.js?v=62','assets/villa-park-terreo.jpeg','assets/villa-park-superior.jpeg','assets/villa-leaf.svg','assets/oca-wordmark.svg','assets/residencial-girassol.svg','assets/locacoes-avulsas.svg','assets/villa-park-approved-v51.jpeg','assets/girassol-approved-v51.jpeg','assets/oca-urbana-approved-v51.jpeg'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
